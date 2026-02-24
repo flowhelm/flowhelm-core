@@ -36,12 +36,34 @@ jobs:
             --exclude '.github' \
             ./ "$APP_DIR/"
 
-      - name: Post-deploy sanity
+      - name: Optional service restart
         env:
           APP_DIR: ${{ vars.APP_DIR }}
+          SERVICE_RESTART_CMD: ${{ vars.SERVICE_RESTART_CMD }}
+        run: |
+          set -euo pipefail
+          APP_DIR="${APP_DIR:-/home/flowhelm-core}"
+          cd "$APP_DIR"
+          if [ -n "${SERVICE_RESTART_CMD:-}" ]; then
+            echo "Running SERVICE_RESTART_CMD"
+            bash -lc "$SERVICE_RESTART_CMD"
+          else
+            echo "No SERVICE_RESTART_CMD configured; skipping restart"
+          fi
+
+      - name: Post-deploy sanity + optional health check
+        env:
+          APP_DIR: ${{ vars.APP_DIR }}
+          HEALTHCHECK_CMD: ${{ vars.HEALTHCHECK_CMD }}
         run: |
           set -euo pipefail
           APP_DIR="${APP_DIR:-/home/flowhelm-core}"
           cd "$APP_DIR"
           echo "Deployed commit: $GITHUB_SHA"
           ls -la | head -n 20
+          if [ -n "${HEALTHCHECK_CMD:-}" ]; then
+            echo "Running HEALTHCHECK_CMD"
+            bash -lc "$HEALTHCHECK_CMD"
+          else
+            echo "No HEALTHCHECK_CMD configured; skipping health check"
+          fi
