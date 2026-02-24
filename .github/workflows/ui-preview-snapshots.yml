@@ -1,0 +1,70 @@
+name: UI Preview Snapshots
+
+on:
+  pull_request:
+    paths:
+      - "ui/**"
+      - ".github/workflows/ui-preview-snapshots.yml"
+  workflow_dispatch:
+
+jobs:
+  ui-snapshots:
+    runs-on: blacksmith-16vcpu-ubuntu-2404
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
+        with:
+          install-bun: "false"
+
+      - name: Build UI
+        run: pnpm ui:build
+
+      - name: Install Chromium for Playwright
+        run: pnpm --dir ui exec playwright install --with-deps chromium
+
+      - name: Capture UI screenshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/ui-snapshots
+
+          pnpm --dir ui preview --host 127.0.0.1 --port 4173 > /tmp/ui-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill "$PREVIEW_PID" >/dev/null 2>&1 || true' EXIT
+
+          ready=false
+          for _ in {1..60}; do
+            if curl -fsS http://127.0.0.1:4173 >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "UI preview server failed to start"
+            cat /tmp/ui-preview.log || true
+            exit 1
+          fi
+
+          pnpm --dir ui exec node --input-type=module <<'EOF'
+          import { chromium } from 'playwright';
+
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+          await page.goto('http://127.0.0.1:4173', { waitUntil: 'networkidle' });
+          await page.screenshot({ path: '../.artifacts/ui-snapshots/ui-home.png', fullPage: true });
+          await browser.close();
+          EOF
+
+      - name: Upload UI snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-snapshots
+          path: .artifacts/ui-snapshots
+          if-no-files-found: error
