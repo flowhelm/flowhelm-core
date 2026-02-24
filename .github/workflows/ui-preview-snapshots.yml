@@ -62,6 +62,24 @@ jobs:
           await browser.close();
           EOF
 
+      - name: Add screenshot to workflow summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMG=".artifacts/ui-snapshots/ui-home.png"
+          if [ ! -f "$IMG" ]; then
+            echo "No screenshot found at $IMG" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "## UI Snapshot Preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Embedded preview + downloadable artifact below." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          B64=$(base64 -w 0 "$IMG")
+          echo "<img alt=\"ui-home\" src=\"data:image/png;base64,${B64}\" width=\"960\" />" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload UI snapshots
         uses: actions/upload-artifact@v4
         with:
