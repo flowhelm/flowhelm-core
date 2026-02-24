@@ -11,61 +11,22 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, flowhelm-core]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate deploy secrets
+      - name: Ensure app directory
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          set -euo pipefail
-          for v in SSH_HOST SSH_USER SSH_KEY; do
-            if [ -z "${!v:-}" ]; then
-              echo "::error::Missing required secret: $v"
-              exit 1
-            fi
-          done
-
-      - name: Configure SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          touch ~/.ssh/known_hosts
-          if [[ "$SSH_HOST" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-            echo "SSH_HOST is IPv4 literal; skipping DNS resolution check"
-          else
-            getent hosts "$SSH_HOST" >/dev/null || {
-              echo "::error::SSH_HOST not resolvable: $SSH_HOST"
-              exit 1
-            }
-          fi
-          ssh-keyscan -T 10 -H "$SSH_HOST" >> ~/.ssh/known_hosts
-
-      - name: Ensure remote app directory
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
           APP_DIR: ${{ vars.APP_DIR }}
         run: |
           set -euo pipefail
           APP_DIR="${APP_DIR:-/home/flowhelm-core}"
-          ssh -i ~/.ssh/id_ed25519 "$SSH_USER@$SSH_HOST" "mkdir -p '$APP_DIR'"
+          mkdir -p "$APP_DIR"
 
-      - name: Sync repository to remote
+      - name: Sync checkout to app directory
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
           APP_DIR: ${{ vars.APP_DIR }}
         run: |
           set -euo pipefail
@@ -73,15 +34,14 @@ jobs:
           rsync -az --delete \
             --exclude '.git' \
             --exclude '.github' \
-            -e "ssh -i ~/.ssh/id_ed25519" \
-            ./ "$SSH_USER@$SSH_HOST:$APP_DIR/"
+            ./ "$APP_DIR/"
 
       - name: Post-deploy sanity
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
           APP_DIR: ${{ vars.APP_DIR }}
         run: |
           set -euo pipefail
           APP_DIR="${APP_DIR:-/home/flowhelm-core}"
-          ssh -i ~/.ssh/id_ed25519 "$SSH_USER@$SSH_HOST" "cd '$APP_DIR' && ls -la | head -n 20"
+          cd "$APP_DIR"
+          echo "Deployed commit: $GITHUB_SHA"
+          ls -la | head -n 20
