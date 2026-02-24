@@ -10,7 +10,6 @@ services:
       HOME: /home/node
       TERM: xterm-256color
       OPENCLAW_GATEWAY_BIND: ${OPENCLAW_GATEWAY_BIND:-lan}
-      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-change-me}
     volumes:
       - ${OPENCLAW_CONFIG_DIR:-./.flowhelm-config}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR:-./.flowhelm-workspace}:/home/node/.openclaw/workspace

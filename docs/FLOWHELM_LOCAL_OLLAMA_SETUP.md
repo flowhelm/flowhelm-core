@@ -37,6 +37,8 @@ curl -s http://127.0.0.1:18789/health || true
 
 Point Flowhelm/OpenClaw model config to Ollama endpoint (`http://ollama:11434` from container network or `http://<host>:11434` from host runtime), then pick the local model in model selection.
 
+Gateway auth token should be defined in `.flowhelm-config/openclaw.json` under `gateway.auth.token` (not legacy `gateway.token`).
+
 ## Notes
 
 - This is a baseline dev setup (no GPU tuning yet).
