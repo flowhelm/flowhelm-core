@@ -22,16 +22,22 @@ runs:
           echo "::error::Invalid pnpm-version input: '$PNPM_VERSION'"
           exit 2
         fi
-        corepack enable
-        for attempt in 1 2 3; do
-          if corepack prepare "pnpm@$PNPM_VERSION" --activate; then
-            pnpm -v
-            exit 0
-          fi
-          echo "corepack prepare failed (attempt $attempt/3). Retrying..."
-          sleep $((attempt * 10))
-        done
-        exit 1
+        if command -v corepack >/dev/null 2>&1; then
+          corepack enable
+          for attempt in 1 2 3; do
+            if corepack prepare "pnpm@$PNPM_VERSION" --activate; then
+              pnpm -v
+              exit 0
+            fi
+            echo "corepack prepare failed (attempt $attempt/3). Retrying..."
+            sleep $((attempt * 10))
+          done
+          exit 1
+        fi
+
+        echo "corepack not found; falling back to npm global pnpm install"
+        npm install -g "pnpm@$PNPM_VERSION"
+        pnpm -v
 
     - name: Resolve pnpm store path
       id: pnpm-store
