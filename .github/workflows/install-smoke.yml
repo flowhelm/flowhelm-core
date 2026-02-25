@@ -48,6 +48,27 @@ jobs:
       - name: Install pnpm deps (minimal)
         run: pnpm install --ignore-scripts --frozen-lockfile
 
+      - name: Ensure Docker access on self-hosted runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          if docker info >/dev/null 2>&1; then
+            echo "Docker socket is directly accessible."
+            exit 0
+          fi
+
+          if command -v sudo >/dev/null 2>&1 && sudo -n docker info >/dev/null 2>&1; then
+            mkdir -p "$RUNNER_TEMP/bin"
+            printf '%s\n' '#!/usr/bin/env bash' 'exec sudo -n docker "$@"' >"$RUNNER_TEMP/bin/docker"
+            chmod +x "$RUNNER_TEMP/bin/docker"
+            echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+            echo "Configured docker wrapper via sudo."
+            exit 0
+          fi
+
+          echo "::error::Docker is unavailable for this runner (no socket access and no sudo fallback)."
+          exit 1
+
       - name: Run installer docker tests
         env:
           CLAWDBOT_INSTALL_URL: https://openclaw.ai/install.sh
