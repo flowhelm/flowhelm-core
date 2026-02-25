@@ -1,20 +1,7 @@
 name: Labeler
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
-  issues:
-    types: [opened]
   workflow_dispatch:
-    inputs:
-      max_prs:
-        description: "Maximum number of open PRs to process (0 = all)"
-        required: false
-        default: "200"
-      per_page:
-        description: "PRs per page (1-100)"
-        required: false
-        default: "50"
 
 permissions: {}
 
@@ -23,7 +10,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    runs-on: blacksmith-16vcpu-ubuntu-2404
+    runs-on: [self-hosted, linux, x64, flowhelm-core]
     steps:
       - uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         id: app-token
@@ -200,7 +187,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    runs-on: blacksmith-16vcpu-ubuntu-2404
+    runs-on: [self-hosted, linux, x64, flowhelm-core]
     steps:
       - uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         id: app-token
@@ -440,7 +427,7 @@ jobs:
   label-issues:
     permissions:
       issues: write
-    runs-on: blacksmith-16vcpu-ubuntu-2404
+    runs-on: [self-hosted, linux, x64, flowhelm-core]
     steps:
       - uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         id: app-token

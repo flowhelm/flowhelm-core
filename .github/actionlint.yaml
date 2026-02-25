@@ -9,6 +9,7 @@ self-hosted-runner:
     - blacksmith-16vcpu-ubuntu-2404
     - blacksmith-16vcpu-windows-2025
     - blacksmith-16vcpu-ubuntu-2404-arm
+    - flowhelm-core
 
 # Ignore patterns for known issues
 paths:
