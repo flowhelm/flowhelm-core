@@ -1,16 +1,61 @@
-name: Deploy Dev (flowhelm-core)
+name: Pipeline (CI + Dev Deploy)
 
 on:
+  pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: deploy-dev-flowhelm-core
+  group: pipeline-flowhelm-core-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  validate:
     runs-on: [self-hosted, linux, x64, flowhelm-core]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
 
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.x
+          check-latest: true
+
+      - name: Setup pnpm + cache store
+        uses: ./.github/actions/setup-pnpm-store-cache
+        with:
+          pnpm-version: "10.23.0"
+          cache-key-suffix: "node22"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts=false --config.engine-strict=false --config.enable-pre-post-scripts=true
+
+      - name: Lint + types + format
+        run: pnpm check
+
+      - name: Unit/integration tests
+        env:
+          OPENCLAW_TEST_WORKERS: 2
+          OPENCLAW_TEST_MAX_OLD_SPACE_SIZE_MB: 6144
+        run: pnpm canvas:a2ui:bundle && pnpm test
+
+      - name: Secrets baseline check
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install detect-secrets==1.5.0
+          detect-secrets scan --baseline .secrets.baseline
+
+  deploy-dev:
+    needs: [validate]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, x64, flowhelm-core]
+    concurrency:
+      group: deploy-dev-flowhelm-core
+      cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
