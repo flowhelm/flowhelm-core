@@ -42,7 +42,9 @@ Jobs are ordered so cheap checks fail before expensive ones run:
 | -------------------------------- | ------------------------------------------ |
 | `blacksmith-16vcpu-ubuntu-2404`  | Most Linux jobs, including scope detection |
 | `blacksmith-16vcpu-windows-2025` | `checks-windows`                           |
-| `macos-latest`                   | `macos`, `ios`                             |
+| `macos-latest`                   | `macos`, `ios` (currently disabled)        |
+
+> Note: native desktop/mobile lanes are currently paused while the repo focuses on web + docker delivery.
 
 ## Local Equivalents
 
