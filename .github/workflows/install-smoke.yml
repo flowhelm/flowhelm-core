@@ -50,10 +50,10 @@ jobs:
 
       - name: Run installer docker tests
         env:
-          CLAWDBOT_INSTALL_URL: https://openclaw.ai/install.sh
-          CLAWDBOT_INSTALL_CLI_URL: https://openclaw.ai/install-cli.sh
-          CLAWDBOT_NO_ONBOARD: "1"
-          CLAWDBOT_INSTALL_SMOKE_SKIP_CLI: "1"
-          CLAWDBOT_INSTALL_SMOKE_SKIP_NONROOT: ${{ github.event_name == 'pull_request' && '1' || '0' }}
-          CLAWDBOT_INSTALL_SMOKE_SKIP_PREVIOUS: "1"
+          FLOWHELM_BOT_INSTALL_URL: https://flowhelm.ai/install.sh
+          FLOWHELM_BOT_INSTALL_CLI_URL: https://flowhelm.ai/install-cli.sh
+          FLOWHELM_BOT_NO_ONBOARD: "1"
+          FLOWHELM_BOT_INSTALL_SMOKE_SKIP_CLI: "1"
+          FLOWHELM_BOT_INSTALL_SMOKE_SKIP_NONROOT: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+          FLOWHELM_BOT_INSTALL_SMOKE_SKIP_PREVIOUS: "1"
         run: pnpm test:install:smoke

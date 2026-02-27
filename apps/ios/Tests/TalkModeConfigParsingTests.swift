@@ -1,5 +1,5 @@
 import Testing
-@testable import OpenClaw
+@testable import FlowHelm
 
 @Suite struct TalkModeConfigParsingTests {
     @Test func prefersNormalizedTalkProviderPayload() async {

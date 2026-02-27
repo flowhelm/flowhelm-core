@@ -1,9 +1,9 @@
-import type { OpenClawConfig } from "../../config/types.js";
+import type { FlowHelmConfig } from "../../config/types.js";
 import { resolveTelegramAccount } from "../../telegram/accounts.js";
 import type { ChannelDirectoryEntry } from "./types.js";
 
 export type DirectoryConfigParams = {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;

@@ -6,7 +6,7 @@ import CryptoKit
 import EventKit
 import Foundation
 import Darwin
-import OpenClawKit
+import FlowHelmKit
 import Network
 import Observation
 import Photos
@@ -753,7 +753,7 @@ final class GatewayConnectionController {
         if manualClientId?.isEmpty == false {
             return manualClientId!
         }
-        return "openclaw-ios"
+        return "flowhelm-ios"
     }
 
     private func resolveManualPort(host: String, port: Int, useTLS: Bool) -> Int? {
@@ -783,32 +783,32 @@ final class GatewayConnectionController {
     }
 
     private func currentCaps() -> [String] {
-        var caps = [OpenClawCapability.canvas.rawValue, OpenClawCapability.screen.rawValue]
+        var caps = [FlowHelmCapability.canvas.rawValue, FlowHelmCapability.screen.rawValue]
 
         // Default-on: if the key doesn't exist yet, treat it as enabled.
         let cameraEnabled =
             UserDefaults.standard.object(forKey: "camera.enabled") == nil
                 ? true
                 : UserDefaults.standard.bool(forKey: "camera.enabled")
-        if cameraEnabled { caps.append(OpenClawCapability.camera.rawValue) }
+        if cameraEnabled { caps.append(FlowHelmCapability.camera.rawValue) }
 
         let voiceWakeEnabled = UserDefaults.standard.bool(forKey: VoiceWakePreferences.enabledKey)
-        if voiceWakeEnabled { caps.append(OpenClawCapability.voiceWake.rawValue) }
+        if voiceWakeEnabled { caps.append(FlowHelmCapability.voiceWake.rawValue) }
 
         let locationModeRaw = UserDefaults.standard.string(forKey: "location.enabledMode") ?? "off"
-        let locationMode = OpenClawLocationMode(rawValue: locationModeRaw) ?? .off
-        if locationMode != .off { caps.append(OpenClawCapability.location.rawValue) }
+        let locationMode = FlowHelmLocationMode(rawValue: locationModeRaw) ?? .off
+        if locationMode != .off { caps.append(FlowHelmCapability.location.rawValue) }
 
-        caps.append(OpenClawCapability.device.rawValue)
+        caps.append(FlowHelmCapability.device.rawValue)
         if WatchMessagingService.isSupportedOnDevice() {
-            caps.append(OpenClawCapability.watch.rawValue)
+            caps.append(FlowHelmCapability.watch.rawValue)
         }
-        caps.append(OpenClawCapability.photos.rawValue)
-        caps.append(OpenClawCapability.contacts.rawValue)
-        caps.append(OpenClawCapability.calendar.rawValue)
-        caps.append(OpenClawCapability.reminders.rawValue)
+        caps.append(FlowHelmCapability.photos.rawValue)
+        caps.append(FlowHelmCapability.contacts.rawValue)
+        caps.append(FlowHelmCapability.calendar.rawValue)
+        caps.append(FlowHelmCapability.reminders.rawValue)
         if Self.motionAvailable() {
-            caps.append(OpenClawCapability.motion.rawValue)
+            caps.append(FlowHelmCapability.motion.rawValue)
         }
 
         return caps
@@ -816,58 +816,58 @@ final class GatewayConnectionController {
 
     private func currentCommands() -> [String] {
         var commands: [String] = [
-            OpenClawCanvasCommand.present.rawValue,
-            OpenClawCanvasCommand.hide.rawValue,
-            OpenClawCanvasCommand.navigate.rawValue,
-            OpenClawCanvasCommand.evalJS.rawValue,
-            OpenClawCanvasCommand.snapshot.rawValue,
-            OpenClawCanvasA2UICommand.push.rawValue,
-            OpenClawCanvasA2UICommand.pushJSONL.rawValue,
-            OpenClawCanvasA2UICommand.reset.rawValue,
-            OpenClawScreenCommand.record.rawValue,
-            OpenClawSystemCommand.notify.rawValue,
-            OpenClawChatCommand.push.rawValue,
-            OpenClawTalkCommand.pttStart.rawValue,
-            OpenClawTalkCommand.pttStop.rawValue,
-            OpenClawTalkCommand.pttCancel.rawValue,
-            OpenClawTalkCommand.pttOnce.rawValue,
+            FlowHelmCanvasCommand.present.rawValue,
+            FlowHelmCanvasCommand.hide.rawValue,
+            FlowHelmCanvasCommand.navigate.rawValue,
+            FlowHelmCanvasCommand.evalJS.rawValue,
+            FlowHelmCanvasCommand.snapshot.rawValue,
+            FlowHelmCanvasA2UICommand.push.rawValue,
+            FlowHelmCanvasA2UICommand.pushJSONL.rawValue,
+            FlowHelmCanvasA2UICommand.reset.rawValue,
+            FlowHelmScreenCommand.record.rawValue,
+            FlowHelmSystemCommand.notify.rawValue,
+            FlowHelmChatCommand.push.rawValue,
+            FlowHelmTalkCommand.pttStart.rawValue,
+            FlowHelmTalkCommand.pttStop.rawValue,
+            FlowHelmTalkCommand.pttCancel.rawValue,
+            FlowHelmTalkCommand.pttOnce.rawValue,
         ]
 
         let caps = Set(self.currentCaps())
-        if caps.contains(OpenClawCapability.camera.rawValue) {
-            commands.append(OpenClawCameraCommand.list.rawValue)
-            commands.append(OpenClawCameraCommand.snap.rawValue)
-            commands.append(OpenClawCameraCommand.clip.rawValue)
+        if caps.contains(FlowHelmCapability.camera.rawValue) {
+            commands.append(FlowHelmCameraCommand.list.rawValue)
+            commands.append(FlowHelmCameraCommand.snap.rawValue)
+            commands.append(FlowHelmCameraCommand.clip.rawValue)
         }
-        if caps.contains(OpenClawCapability.location.rawValue) {
-            commands.append(OpenClawLocationCommand.get.rawValue)
+        if caps.contains(FlowHelmCapability.location.rawValue) {
+            commands.append(FlowHelmLocationCommand.get.rawValue)
         }
-        if caps.contains(OpenClawCapability.device.rawValue) {
-            commands.append(OpenClawDeviceCommand.status.rawValue)
-            commands.append(OpenClawDeviceCommand.info.rawValue)
+        if caps.contains(FlowHelmCapability.device.rawValue) {
+            commands.append(FlowHelmDeviceCommand.status.rawValue)
+            commands.append(FlowHelmDeviceCommand.info.rawValue)
         }
-        if caps.contains(OpenClawCapability.watch.rawValue) {
-            commands.append(OpenClawWatchCommand.status.rawValue)
-            commands.append(OpenClawWatchCommand.notify.rawValue)
+        if caps.contains(FlowHelmCapability.watch.rawValue) {
+            commands.append(FlowHelmWatchCommand.status.rawValue)
+            commands.append(FlowHelmWatchCommand.notify.rawValue)
         }
-        if caps.contains(OpenClawCapability.photos.rawValue) {
-            commands.append(OpenClawPhotosCommand.latest.rawValue)
+        if caps.contains(FlowHelmCapability.photos.rawValue) {
+            commands.append(FlowHelmPhotosCommand.latest.rawValue)
         }
-        if caps.contains(OpenClawCapability.contacts.rawValue) {
-            commands.append(OpenClawContactsCommand.search.rawValue)
-            commands.append(OpenClawContactsCommand.add.rawValue)
+        if caps.contains(FlowHelmCapability.contacts.rawValue) {
+            commands.append(FlowHelmContactsCommand.search.rawValue)
+            commands.append(FlowHelmContactsCommand.add.rawValue)
         }
-        if caps.contains(OpenClawCapability.calendar.rawValue) {
-            commands.append(OpenClawCalendarCommand.events.rawValue)
-            commands.append(OpenClawCalendarCommand.add.rawValue)
+        if caps.contains(FlowHelmCapability.calendar.rawValue) {
+            commands.append(FlowHelmCalendarCommand.events.rawValue)
+            commands.append(FlowHelmCalendarCommand.add.rawValue)
         }
-        if caps.contains(OpenClawCapability.reminders.rawValue) {
-            commands.append(OpenClawRemindersCommand.list.rawValue)
-            commands.append(OpenClawRemindersCommand.add.rawValue)
+        if caps.contains(FlowHelmCapability.reminders.rawValue) {
+            commands.append(FlowHelmRemindersCommand.list.rawValue)
+            commands.append(FlowHelmRemindersCommand.add.rawValue)
         }
-        if caps.contains(OpenClawCapability.motion.rawValue) {
-            commands.append(OpenClawMotionCommand.activity.rawValue)
-            commands.append(OpenClawMotionCommand.pedometer.rawValue)
+        if caps.contains(FlowHelmCapability.motion.rawValue) {
+            commands.append(FlowHelmMotionCommand.activity.rawValue)
+            commands.append(FlowHelmMotionCommand.pedometer.rawValue)
         }
 
         return commands

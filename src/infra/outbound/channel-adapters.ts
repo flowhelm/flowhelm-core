@@ -1,12 +1,12 @@
 import type { ChannelId } from "../../channels/plugins/types.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { FlowHelmConfig } from "../../config/config.js";
 
 export type CrossContextComponentsBuilder = (message: string) => any[];
 
 export type CrossContextComponentsFactory = (params: {
   originLabel: string;
   message: string;
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   accountId?: string | null;
 }) => any[];
 

@@ -8,7 +8,7 @@ import type {
   ChannelMessageActionName,
   ChannelThreadingToolContext,
 } from "../../channels/plugins/types.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { FlowHelmConfig } from "../../config/config.js";
 import { extensionForMime } from "../../media/mime.js";
 import { parseTelegramTarget } from "../../telegram/targets.js";
 import { loadWebMedia } from "../../web/media.js";
@@ -54,7 +54,7 @@ export function resolveTelegramAutoThreadId(params: {
 }
 
 function resolveAttachmentMaxBytes(params: {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channel: ChannelId;
   accountId?: string | null;
 }): number | undefined {
@@ -135,7 +135,7 @@ function normalizeBase64Payload(params: { base64?: string; contentType?: string 
 }
 
 async function hydrateAttachmentPayload(params: {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channel: ChannelId;
   accountId?: string | null;
   args: Record<string, unknown>;
@@ -238,7 +238,7 @@ export async function normalizeSandboxMediaList(params: {
 }
 
 async function hydrateAttachmentActionPayload(params: {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channel: ChannelId;
   accountId?: string | null;
   args: Record<string, unknown>;
@@ -274,7 +274,7 @@ async function hydrateAttachmentActionPayload(params: {
 }
 
 export async function hydrateSetGroupIconParams(params: {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channel: ChannelId;
   accountId?: string | null;
   args: Record<string, unknown>;
@@ -288,7 +288,7 @@ export async function hydrateSetGroupIconParams(params: {
 }
 
 export async function hydrateSendAttachmentParams(params: {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channel: ChannelId;
   accountId?: string | null;
   args: Record<string, unknown>;

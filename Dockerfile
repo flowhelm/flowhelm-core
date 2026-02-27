@@ -9,10 +9,10 @@ RUN corepack enable
 WORKDIR /app
 RUN chown node:node /app
 
-ARG OPENCLAW_DOCKER_APT_PACKAGES=""
-RUN if [ -n "$OPENCLAW_DOCKER_APT_PACKAGES" ]; then \
+ARG FLOWHELM_DOCKER_APT_PACKAGES=""
+RUN if [ -n "$FLOWHELM_DOCKER_APT_PACKAGES" ]; then \
       apt-get update && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $OPENCLAW_DOCKER_APT_PACKAGES && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $FLOWHELM_DOCKER_APT_PACKAGES && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*; \
     fi
@@ -26,12 +26,12 @@ USER node
 RUN pnpm install --frozen-lockfile
 
 # Optionally install Chromium and Xvfb for browser automation.
-# Build with: docker build --build-arg OPENCLAW_INSTALL_BROWSER=1 ...
+# Build with: docker build --build-arg FLOWHELM_INSTALL_BROWSER=1 ...
 # Adds ~300MB but eliminates the 60-90s Playwright install on every container start.
 # Must run after pnpm install so playwright-core is available in node_modules.
 USER root
-ARG OPENCLAW_INSTALL_BROWSER=""
-RUN if [ -n "$OPENCLAW_INSTALL_BROWSER" ]; then \
+ARG FLOWHELM_INSTALL_BROWSER=""
+RUN if [ -n "$FLOWHELM_INSTALL_BROWSER" ]; then \
       apt-get update && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb && \
       mkdir -p /home/node/.cache/ms-playwright && \
@@ -46,7 +46,7 @@ USER node
 COPY --chown=node:node . .
 RUN pnpm build
 # Force pnpm for UI build (Bun may fail on ARM/Synology architectures)
-ENV OPENCLAW_PREFER_PNPM=1
+ENV FLOWHELM_PREFER_PNPM=1
 RUN pnpm ui:build
 
 ENV NODE_ENV=production
@@ -56,7 +56,7 @@ ENV NODE_ENV=production
 # This reduces the attack surface by preventing container escape via root privileges
 USER root
 # Create a symlink for easier command access
-RUN ln -s /app/openclaw.mjs /usr/local/bin/openclaw && chmod +x /usr/local/bin/openclaw
+RUN ln -s /app/flowhelm.mjs /usr/local/bin/flowhelm && chmod +x /usr/local/bin/flowhelm
 
 # Add entrypoint script to bootstrap config
 COPY docker-entrypoint.sh /usr/local/bin/
@@ -69,4 +69,4 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Start gateway server with default config.
 # Binds to LAN (0.0.0.0) so it's reachable from outside the container.
-CMD ["openclaw", "gateway", "--allow-unconfigured", "--bind", "lan"]
+CMD ["flowhelm", "gateway", "--allow-unconfigured", "--bind", "lan"]

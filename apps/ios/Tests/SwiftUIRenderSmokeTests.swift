@@ -1,8 +1,8 @@
-import OpenClawKit
+import FlowHelmKit
 import SwiftUI
 import Testing
 import UIKit
-@testable import OpenClaw
+@testable import FlowHelm
 
 @Suite struct SwiftUIRenderSmokeTests {
     @MainActor private static func host(_ view: some View) -> UIWindow {
@@ -75,7 +75,7 @@ import UIKit
     }
 
     @Test @MainActor func voiceWakeToastBuildsAViewHierarchy() {
-        let root = VoiceWakeToast(command: "openclaw: do something")
+        let root = VoiceWakeToast(command: "flowhelm: do something")
         _ = Self.host(root)
     }
 }

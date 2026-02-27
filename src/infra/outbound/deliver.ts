@@ -10,7 +10,7 @@ import type {
   ChannelOutboundAdapter,
   ChannelOutboundContext,
 } from "../../channels/plugins/types.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { FlowHelmConfig } from "../../config/config.js";
 import {
   appendAssistantMessageToSessionTranscript,
   resolveMirroredTranscriptText,
@@ -77,7 +77,7 @@ type ChannelHandler = {
 };
 
 type ChannelHandlerParams = {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channel: Exclude<OutboundChannel, "none">;
   to: string;
   accountId?: string;
@@ -167,7 +167,7 @@ function createChannelOutboundContextBase(
 const isAbortError = (err: unknown): boolean => err instanceof Error && err.name === "AbortError";
 
 type DeliverOutboundPayloadsCoreParams = {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channel: Exclude<OutboundChannel, "none">;
   to: string;
   accountId?: string;

@@ -3,33 +3,33 @@ set -euo pipefail
 
 cd /repo
 
-export OPENCLAW_STATE_DIR="/tmp/openclaw-test"
-export OPENCLAW_CONFIG_PATH="${OPENCLAW_STATE_DIR}/openclaw.json"
+export FLOWHELM_STATE_DIR="/tmp/flowhelm-test"
+export FLOWHELM_CONFIG_PATH="${FLOWHELM_STATE_DIR}/flowhelm.json"
 
 echo "==> Build"
 pnpm build
 
 echo "==> Seed state"
-mkdir -p "${OPENCLAW_STATE_DIR}/credentials"
-mkdir -p "${OPENCLAW_STATE_DIR}/agents/main/sessions"
-echo '{}' >"${OPENCLAW_CONFIG_PATH}"
-echo 'creds' >"${OPENCLAW_STATE_DIR}/credentials/marker.txt"
-echo 'session' >"${OPENCLAW_STATE_DIR}/agents/main/sessions/sessions.json"
+mkdir -p "${FLOWHELM_STATE_DIR}/credentials"
+mkdir -p "${FLOWHELM_STATE_DIR}/agents/main/sessions"
+echo '{}' >"${FLOWHELM_CONFIG_PATH}"
+echo 'creds' >"${FLOWHELM_STATE_DIR}/credentials/marker.txt"
+echo 'session' >"${FLOWHELM_STATE_DIR}/agents/main/sessions/sessions.json"
 
 echo "==> Reset (config+creds+sessions)"
-pnpm openclaw reset --scope config+creds+sessions --yes --non-interactive
+pnpm flowhelm reset --scope config+creds+sessions --yes --non-interactive
 
-test ! -f "${OPENCLAW_CONFIG_PATH}"
-test ! -d "${OPENCLAW_STATE_DIR}/credentials"
-test ! -d "${OPENCLAW_STATE_DIR}/agents/main/sessions"
+test ! -f "${FLOWHELM_CONFIG_PATH}"
+test ! -d "${FLOWHELM_STATE_DIR}/credentials"
+test ! -d "${FLOWHELM_STATE_DIR}/agents/main/sessions"
 
 echo "==> Recreate minimal config"
-mkdir -p "${OPENCLAW_STATE_DIR}/credentials"
-echo '{}' >"${OPENCLAW_CONFIG_PATH}"
+mkdir -p "${FLOWHELM_STATE_DIR}/credentials"
+echo '{}' >"${FLOWHELM_CONFIG_PATH}"
 
 echo "==> Uninstall (state only)"
-pnpm openclaw uninstall --state --yes --non-interactive
+pnpm flowhelm uninstall --state --yes --non-interactive
 
-test ! -d "${OPENCLAW_STATE_DIR}"
+test ! -d "${FLOWHELM_STATE_DIR}"
 
 echo "OK"

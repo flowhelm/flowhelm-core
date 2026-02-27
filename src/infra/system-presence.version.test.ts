@@ -17,10 +17,10 @@ async function withPresenceModule<T>(
 }
 
 describe("system-presence version fallback", () => {
-  it("uses OPENCLAW_SERVICE_VERSION when OPENCLAW_VERSION is not set", async () => {
+  it("uses FLOWHELM_SERVICE_VERSION when FLOWHELM_VERSION is not set", async () => {
     await withPresenceModule(
       {
-        OPENCLAW_SERVICE_VERSION: "2.4.6-service",
+        FLOWHELM_SERVICE_VERSION: "2.4.6-service",
         npm_package_version: "1.0.0-package",
       },
       ({ listSystemPresence }) => {
@@ -30,11 +30,11 @@ describe("system-presence version fallback", () => {
     );
   });
 
-  it("prefers OPENCLAW_VERSION over OPENCLAW_SERVICE_VERSION", async () => {
+  it("prefers FLOWHELM_VERSION over FLOWHELM_SERVICE_VERSION", async () => {
     await withPresenceModule(
       {
-        OPENCLAW_VERSION: "9.9.9-cli",
-        OPENCLAW_SERVICE_VERSION: "2.4.6-service",
+        FLOWHELM_VERSION: "9.9.9-cli",
+        FLOWHELM_SERVICE_VERSION: "2.4.6-service",
         npm_package_version: "1.0.0-package",
       },
       ({ listSystemPresence }) => {
@@ -44,11 +44,11 @@ describe("system-presence version fallback", () => {
     );
   });
 
-  it("uses npm_package_version when OPENCLAW_VERSION and OPENCLAW_SERVICE_VERSION are blank", async () => {
+  it("uses npm_package_version when FLOWHELM_VERSION and FLOWHELM_SERVICE_VERSION are blank", async () => {
     await withPresenceModule(
       {
-        OPENCLAW_VERSION: " ",
-        OPENCLAW_SERVICE_VERSION: "\t",
+        FLOWHELM_VERSION: " ",
+        FLOWHELM_SERVICE_VERSION: "\t",
         npm_package_version: "1.0.0-package",
       },
       ({ listSystemPresence }) => {

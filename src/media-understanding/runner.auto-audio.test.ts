@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OpenClawConfig } from "../config/config.js";
+import type { FlowHelmConfig } from "../config/config.js";
 import { buildProviderRegistry, runCapability } from "./runner.js";
 import { withAudioFixture } from "./runner.test-utils.js";
 
@@ -15,7 +15,7 @@ function createOpenAiAudioProvider(
   });
 }
 
-function createOpenAiAudioCfg(extra?: Partial<OpenClawConfig>): OpenClawConfig {
+function createOpenAiAudioCfg(extra?: Partial<FlowHelmConfig>): FlowHelmConfig {
   return {
     models: {
       providers: {
@@ -26,15 +26,15 @@ function createOpenAiAudioCfg(extra?: Partial<OpenClawConfig>): OpenClawConfig {
       },
     },
     ...extra,
-  } as unknown as OpenClawConfig;
+  } as unknown as FlowHelmConfig;
 }
 
 async function runAutoAudioCase(params: {
   transcribeAudio: (req: { model?: string }) => Promise<{ text: string; model: string }>;
-  cfgExtra?: Partial<OpenClawConfig>;
+  cfgExtra?: Partial<FlowHelmConfig>;
 }) {
   let runResult: Awaited<ReturnType<typeof runCapability>> | undefined;
-  await withAudioFixture("openclaw-auto-audio", async ({ ctx, media, cache }) => {
+  await withAudioFixture("flowhelm-auto-audio", async ({ ctx, media, cache }) => {
     const providerRegistry = createOpenAiAudioProvider(params.transcribeAudio);
     const cfg = createOpenAiAudioCfg(params.cfgExtra);
     runResult = await runCapability({
@@ -123,7 +123,7 @@ describe("runCapability auto audio entries", () => {
     process.env.MISTRAL_API_KEY = "mistral-test-key";
     let runResult: Awaited<ReturnType<typeof runCapability>> | undefined;
     try {
-      await withAudioFixture("openclaw-auto-audio-mistral", async ({ ctx, media, cache }) => {
+      await withAudioFixture("flowhelm-auto-audio-mistral", async ({ ctx, media, cache }) => {
         const providerRegistry = buildProviderRegistry({
           openai: {
             id: "openai",
@@ -152,7 +152,7 @@ describe("runCapability auto audio entries", () => {
               },
             },
           },
-        } as unknown as OpenClawConfig;
+        } as unknown as FlowHelmConfig;
 
         runResult = await runCapability({
           capability: "audio",

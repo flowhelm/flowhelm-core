@@ -14,28 +14,28 @@ Use this page for scheduler and delivery issues (`cron` + `heartbeat`).
 ## Command ladder
 
 ```bash
-openclaw status
-openclaw gateway status
-openclaw logs --follow
-openclaw doctor
-openclaw channels status --probe
+flowhelm status
+flowhelm gateway status
+flowhelm logs --follow
+flowhelm doctor
+flowhelm channels status --probe
 ```
 
 Then run automation checks:
 
 ```bash
-openclaw cron status
-openclaw cron list
-openclaw system heartbeat last
+flowhelm cron status
+flowhelm cron list
+flowhelm system heartbeat last
 ```
 
 ## Cron not firing
 
 ```bash
-openclaw cron status
-openclaw cron list
-openclaw cron runs --id <jobId> --limit 20
-openclaw logs --follow
+flowhelm cron status
+flowhelm cron list
+flowhelm cron runs --id <jobId> --limit 20
+flowhelm logs --follow
 ```
 
 Good output looks like:
@@ -53,10 +53,10 @@ Common signatures:
 ## Cron fired but no delivery
 
 ```bash
-openclaw cron runs --id <jobId> --limit 20
-openclaw cron list
-openclaw channels status --probe
-openclaw logs --follow
+flowhelm cron runs --id <jobId> --limit 20
+flowhelm cron list
+flowhelm channels status --probe
+flowhelm logs --follow
 ```
 
 Good output looks like:
@@ -74,10 +74,10 @@ Common signatures:
 ## Heartbeat suppressed or skipped
 
 ```bash
-openclaw system heartbeat last
-openclaw logs --follow
-openclaw config get agents.defaults.heartbeat
-openclaw channels status --probe
+flowhelm system heartbeat last
+flowhelm logs --follow
+flowhelm config get agents.defaults.heartbeat
+flowhelm channels status --probe
 ```
 
 Good output looks like:
@@ -95,11 +95,11 @@ Common signatures:
 ## Timezone and activeHours gotchas
 
 ```bash
-openclaw config get agents.defaults.heartbeat.activeHours
-openclaw config get agents.defaults.heartbeat.activeHours.timezone
-openclaw config get agents.defaults.userTimezone || echo "agents.defaults.userTimezone not set"
-openclaw cron list
-openclaw logs --follow
+flowhelm config get agents.defaults.heartbeat.activeHours
+flowhelm config get agents.defaults.heartbeat.activeHours.timezone
+flowhelm config get agents.defaults.userTimezone || echo "agents.defaults.userTimezone not set"
+flowhelm cron list
+flowhelm logs --follow
 ```
 
 Quick rules:
