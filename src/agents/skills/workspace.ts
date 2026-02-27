@@ -8,6 +8,10 @@ import {
 } from "@mariozechner/pi-coding-agent";
 import type { FlowHelmConfig } from "../../config/config.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
+import { resolveMemorySearchConfig } from "../../agents/memory-search.js";
+import {
+  createEmbeddingProvider,
+} from "../../memory/embeddings.js";
 import { CONFIG_DIR, resolveUserPath } from "../../utils.js";
 import { resolveSandboxPath } from "../sandbox-paths.js";
 import { resolveBundledSkillsDir } from "./bundled-dir.js";
@@ -31,6 +35,99 @@ import type {
 const fsp = fs.promises;
 const skillsLogger = createSubsystemLogger("skills");
 const skillCommandDebugOnce = new Set<string>();
+
+// Simple in-memory cache for skill embeddings.
+// Key: name:description, Value: vector
+const SKILL_EMBEDDING_CACHE = new Map<string, number[]>();
+
+/**
+ * Calculate cosine similarity between two vectors.
+ */
+function cosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length) return 0;
+  let dotProduct = 0;
+  let mA = 0;
+  let mB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dotProduct += a[i] * b[i];
+    mA += a[i] * a[i];
+    mB += b[i] * b[i];
+  }
+  mA = Math.sqrt(mA);
+  mB = Math.sqrt(mB);
+  if (mA * mB === 0) return 0;
+  return dotProduct / (mA * mB);
+}
+
+/**
+ * Filter skills by vector relevance to the prompt.
+ */
+async function filterSkillsByVectorRelevance(params: {
+  prompt: string;
+  entries: SkillEntry[];
+  config?: FlowHelmConfig;
+  agentId?: string;
+}): Promise<SkillEntry[]> {
+  const { prompt, entries, config, agentId } = params;
+  const injectionCfg = config?.skills?.dynamicInjection;
+  if (!injectionCfg?.enabled || !prompt.trim() || entries.length === 0) {
+    return entries;
+  }
+
+  const maxSkills = injectionCfg.maxSkills ?? 5;
+  const minScore = injectionCfg.minScore ?? 0.3;
+
+  const memorySettings = agentId ? resolveMemorySearchConfig(config ?? {}, agentId) : null;
+  const providerResult = await createEmbeddingProvider({
+    config: config ?? {},
+    provider: memorySettings?.provider ?? "auto",
+    remote: memorySettings?.remote,
+    model: memorySettings?.model ?? "",
+    fallback: memorySettings?.fallback ?? "none",
+    local: memorySettings?.local,
+  });
+
+  const provider = providerResult.provider;
+  if (!provider) {
+    skillsLogger.warn("Dynamic skill injection enabled but no embedding provider available.");
+    return entries;
+  }
+
+  try {
+    const promptVec = await provider.embedQuery(prompt);
+
+    const scoredEntries = await Promise.all(
+      entries.map(async (entry) => {
+        const skill = entry.skill;
+        const cacheKey = `${skill.name}:${skill.description ?? ""}`;
+        let skillVec = SKILL_EMBEDDING_CACHE.get(cacheKey);
+
+        if (!skillVec) {
+          const textToEmbed = `${skill.name}: ${skill.description ?? ""}`;
+          skillVec = await provider.embedQuery(textToEmbed);
+          SKILL_EMBEDDING_CACHE.set(cacheKey, skillVec);
+        }
+
+        const score = cosineSimilarity(promptVec, skillVec);
+        return { entry, score };
+      }),
+    );
+
+    const filtered = scoredEntries
+      .filter((item) => item.score >= minScore)
+      .toSorted((a, b) => b.score - a.score)
+      .slice(0, maxSkills)
+      .map((item) => item.entry);
+
+    skillsLogger.debug(
+      `Dynamic skill injection: kept ${filtered.length} of ${entries.length} skills.`,
+    );
+    return filtered;
+  } catch (err) {
+    skillsLogger.warn(`Dynamic skill injection failed: ${String(err)}`);
+    return entries;
+  }
+}
 
 /**
  * Replace the user's home directory prefix with `~` in skill file paths
@@ -443,11 +540,14 @@ function applySkillsPromptLimits(params: { skills: Skill[]; config?: FlowHelmCon
   return { skillsForPrompt, truncated, truncatedReason };
 }
 
-export function buildWorkspaceSkillSnapshot(
+export async function buildWorkspaceSkillSnapshot(
   workspaceDir: string,
   opts?: WorkspaceSkillBuildOptions & { snapshotVersion?: number },
-): SkillSnapshot {
-  const { eligible, prompt, resolvedSkills } = resolveWorkspaceSkillPromptState(workspaceDir, opts);
+): Promise<SkillSnapshot> {
+  const { eligible, prompt, resolvedSkills } = await resolveWorkspaceSkillPromptState(
+    workspaceDir,
+    opts,
+  );
   const skillFilter = normalizeSkillFilter(opts?.skillFilter);
   return {
     prompt,
@@ -462,38 +562,53 @@ export function buildWorkspaceSkillSnapshot(
   };
 }
 
-export function buildWorkspaceSkillsPrompt(
+export async function buildWorkspaceSkillsPrompt(
   workspaceDir: string,
   opts?: WorkspaceSkillBuildOptions,
-): string {
-  return resolveWorkspaceSkillPromptState(workspaceDir, opts).prompt;
+): Promise<string> {
+  const state = await resolveWorkspaceSkillPromptState(workspaceDir, opts);
+  return state.prompt;
 }
 
 type WorkspaceSkillBuildOptions = {
   config?: FlowHelmConfig;
+  agentId?: string;
   managedSkillsDir?: string;
   bundledSkillsDir?: string;
   entries?: SkillEntry[];
   /** If provided, only include skills with these names */
   skillFilter?: string[];
   eligibility?: SkillEligibilityContext;
+  /** User prompt for dynamic relevance filtering. */
+  prompt?: string;
 };
 
-function resolveWorkspaceSkillPromptState(
+async function resolveWorkspaceSkillPromptState(
   workspaceDir: string,
   opts?: WorkspaceSkillBuildOptions,
-): {
+): Promise<{
   eligible: SkillEntry[];
   prompt: string;
   resolvedSkills: Skill[];
-} {
+}> {
   const skillEntries = opts?.entries ?? loadSkillEntries(workspaceDir, opts);
-  const eligible = filterSkillEntries(
+  const eligibleInitial = filterSkillEntries(
     skillEntries,
     opts?.config,
     opts?.skillFilter,
     opts?.eligibility,
   );
+
+  const eligible =
+    opts?.prompt && opts?.config?.skills?.dynamicInjection?.enabled
+      ? await filterSkillsByVectorRelevance({
+          prompt: opts.prompt,
+          entries: eligibleInitial,
+          config: opts.config,
+          agentId: opts.agentId,
+        })
+      : eligibleInitial;
+
   const promptEntries = eligible.filter(
     (entry) => entry.invocation?.disableModelInvocation !== true,
   );
@@ -516,24 +631,29 @@ function resolveWorkspaceSkillPromptState(
   return { eligible, prompt, resolvedSkills };
 }
 
-export function resolveSkillsPromptForRun(params: {
+export async function resolveSkillsPromptForRun(params: {
   skillsSnapshot?: SkillSnapshot;
   entries?: SkillEntry[];
   config?: FlowHelmConfig;
   workspaceDir: string;
-}): string {
+  agentId?: string;
+  prompt?: string;
+}): Promise<string> {
   const snapshotPrompt = params.skillsSnapshot?.prompt?.trim();
-  if (snapshotPrompt) {
+  const dynamicEnabled = params.config?.skills?.dynamicInjection?.enabled;
+
+  // Use snapshot prompt if available, unless dynamic injection is enabled and we have a prompt
+  if (snapshotPrompt && (!dynamicEnabled || !params.prompt)) {
     return snapshotPrompt;
   }
-  if (params.entries && params.entries.length > 0) {
-    const prompt = buildWorkspaceSkillsPrompt(params.workspaceDir, {
-      entries: params.entries,
-      config: params.config,
-    });
-    return prompt.trim() ? prompt : "";
-  }
-  return "";
+
+  const prompt = await buildWorkspaceSkillsPrompt(params.workspaceDir, {
+    entries: params.entries,
+    config: params.config,
+    agentId: params.agentId,
+    prompt: params.prompt,
+  });
+  return prompt.trim() ? prompt : "";
 }
 
 export function loadWorkspaceSkillEntries(

@@ -174,30 +174,12 @@ export function createSessionsListTool(opts?: {
           kind,
           channel: derivedChannel,
           label: typeof entry.label === "string" ? entry.label : undefined,
-          displayName: typeof entry.displayName === "string" ? entry.displayName : undefined,
-          deliveryContext:
-            deliveryChannel || deliveryTo || deliveryAccountId
-              ? {
-                  channel: deliveryChannel,
-                  to: deliveryTo,
-                  accountId: deliveryAccountId,
-                }
-              : undefined,
           updatedAt: typeof entry.updatedAt === "number" ? entry.updatedAt : undefined,
           sessionId,
           model: typeof entry.model === "string" ? entry.model : undefined,
           contextTokens: typeof entry.contextTokens === "number" ? entry.contextTokens : undefined,
           totalTokens: typeof entry.totalTokens === "number" ? entry.totalTokens : undefined,
           thinkingLevel: typeof entry.thinkingLevel === "string" ? entry.thinkingLevel : undefined,
-          verboseLevel: typeof entry.verboseLevel === "string" ? entry.verboseLevel : undefined,
-          systemSent: typeof entry.systemSent === "boolean" ? entry.systemSent : undefined,
-          abortedLastRun:
-            typeof entry.abortedLastRun === "boolean" ? entry.abortedLastRun : undefined,
-          sendPolicy: typeof entry.sendPolicy === "string" ? entry.sendPolicy : undefined,
-          lastChannel,
-          lastTo: deliveryTo ?? (typeof entry.lastTo === "string" ? entry.lastTo : undefined),
-          lastAccountId,
-          transcriptPath,
         };
         if (messageLimit > 0) {
           const resolvedKey = resolveInternalSessionKey({

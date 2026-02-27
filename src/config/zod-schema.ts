@@ -123,6 +123,14 @@ const HttpUrlSchema = z
     return protocol === "http:" || protocol === "https:";
   }, "Expected http:// or https:// URL");
 
+const SkillsDynamicInjectionSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    maxSkills: z.number().int().min(1).optional(),
+    minScore: z.number().min(0).max(1).optional(),
+  })
+  .strict();
+
 export const FlowHelmSchema = z
   .object({
     $schema: z.string().optional(),
@@ -685,6 +693,7 @@ export const FlowHelmSchema = z
           })
           .strict()
           .optional(),
+        dynamicInjection: SkillsDynamicInjectionSchema.optional(),
         entries: z
           .record(
             z.string(),

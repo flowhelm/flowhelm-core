@@ -35,11 +35,21 @@ export type SkillsLimitsConfig = {
   maxSkillFileBytes?: number;
 };
 
+export type SkillsDynamicInjectionConfig = {
+  /** If enabled, only relevant skills are injected into the system prompt based on user input. */
+  enabled?: boolean;
+  /** Maximum number of skills to inject when dynamic injection is enabled. */
+  maxSkills?: number;
+  /** Minimum relevance score (0-1) for a skill to be injected. */
+  minScore?: number;
+};
+
 export type SkillsConfig = {
   /** Optional bundled-skill allowlist (only affects bundled skills). */
   allowBundled?: string[];
   load?: SkillsLoadConfig;
   install?: SkillsInstallConfig;
   limits?: SkillsLimitsConfig;
+  dynamicInjection?: SkillsDynamicInjectionConfig;
   entries?: Record<string, SkillConfig>;
 };

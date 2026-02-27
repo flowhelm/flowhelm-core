@@ -3,14 +3,14 @@ import { resolveSkillsPromptForRun } from "./skills.js";
 import type { SkillEntry } from "./skills/types.js";
 
 describe("resolveSkillsPromptForRun", () => {
-  it("prefers snapshot prompt when available", () => {
-    const prompt = resolveSkillsPromptForRun({
+  it("prefers snapshot prompt when available", async () => {
+    const prompt = await resolveSkillsPromptForRun({
       skillsSnapshot: { prompt: "SNAPSHOT", skills: [] },
       workspaceDir: "/tmp/flowhelm",
     });
     expect(prompt).toBe("SNAPSHOT");
   });
-  it("builds prompt from entries when snapshot is missing", () => {
+  it("builds prompt from entries when snapshot is missing", async () => {
     const entry: SkillEntry = {
       skill: {
         name: "demo-skill",
@@ -22,7 +22,7 @@ describe("resolveSkillsPromptForRun", () => {
       },
       frontmatter: {},
     };
-    const prompt = resolveSkillsPromptForRun({
+    const prompt = await resolveSkillsPromptForRun({
       entries: [entry],
       workspaceDir: "/tmp/flowhelm",
     });

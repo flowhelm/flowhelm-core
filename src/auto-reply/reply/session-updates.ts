@@ -165,7 +165,7 @@ export async function ensureSkillSnapshot(params: {
       };
     const skillSnapshot =
       isFirstTurnInSession || !current.skillsSnapshot || shouldRefreshSnapshot
-        ? buildWorkspaceSkillSnapshot(workspaceDir, {
+        ? await buildWorkspaceSkillSnapshot(workspaceDir, {
             config: cfg,
             skillFilter,
             eligibility: { remote: remoteEligibility },
@@ -189,7 +189,7 @@ export async function ensureSkillSnapshot(params: {
   }
 
   const skillsSnapshot = shouldRefreshSnapshot
-    ? buildWorkspaceSkillSnapshot(workspaceDir, {
+    ? await buildWorkspaceSkillSnapshot(workspaceDir, {
         config: cfg,
         skillFilter,
         eligibility: { remote: remoteEligibility },
@@ -198,7 +198,7 @@ export async function ensureSkillSnapshot(params: {
     : (nextEntry?.skillsSnapshot ??
       (isFirstTurnInSession
         ? undefined
-        : buildWorkspaceSkillSnapshot(workspaceDir, {
+        : await buildWorkspaceSkillSnapshot(workspaceDir, {
             config: cfg,
             skillFilter,
             eligibility: { remote: remoteEligibility },

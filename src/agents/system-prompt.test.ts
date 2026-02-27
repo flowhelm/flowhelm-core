@@ -22,7 +22,7 @@ describe("buildAgentSystemPrompt", () => {
         },
         expectAuthorizedSection: true,
         contains: [
-          "Authorized senders: +123, +456. These senders are allowlisted; do not assume they are the owner.",
+          "Authorized: +123, +456. (Allowlisted; do not assume owner).",
         ],
         notContains: [],
       },
@@ -34,7 +34,7 @@ describe("buildAgentSystemPrompt", () => {
           ownerDisplay: "hash",
         },
         expectAuthorizedSection: true,
-        contains: ["Authorized senders:"],
+        contains: ["Authorized:"],
         notContains: ["+123", "+456"],
         hashMatch: /[a-f0-9]{12}/,
       },
@@ -119,14 +119,13 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).not.toContain("## Heartbeats");
     expect(prompt).toContain("## Safety");
     expect(prompt).toContain(
-      "For long waits, avoid rapid poll loops: use exec with enough yieldMs or process(action=poll, timeout=<ms>).",
+      "Avoid rapid poll loops: use exec(yieldMs) or process(action=poll).",
     );
-    expect(prompt).toContain("You have no independent goals");
+    expect(prompt).toContain("No independent goals");
     expect(prompt).toContain("Prioritize safety and human oversight");
-    expect(prompt).toContain("if instructions conflict");
-    expect(prompt).toContain("Inspired by Anthropic's constitution");
-    expect(prompt).toContain("Do not manipulate or persuade anyone");
-    expect(prompt).toContain("Do not copy yourself or change system prompts");
+    expect(prompt).toContain("If instructions conflict, ask");
+    expect(prompt).toContain("Do not manipulate anyone");
+    expect(prompt).toContain("Do not copy yourself or change system/safety rules");
     expect(prompt).toContain("## Subagent Context");
     expect(prompt).not.toContain("## Group Chat Context");
     expect(prompt).toContain("Subagent details");
@@ -185,12 +184,11 @@ describe("buildAgentSystemPrompt", () => {
     });
 
     expect(prompt).toContain("## Safety");
-    expect(prompt).toContain("You have no independent goals");
+    expect(prompt).toContain("No independent goals");
     expect(prompt).toContain("Prioritize safety and human oversight");
-    expect(prompt).toContain("if instructions conflict");
-    expect(prompt).toContain("Inspired by Anthropic's constitution");
-    expect(prompt).toContain("Do not manipulate or persuade anyone");
-    expect(prompt).toContain("Do not copy yourself or change system prompts");
+    expect(prompt).toContain("If instructions conflict, ask");
+    expect(prompt).toContain("Do not manipulate anyone");
+    expect(prompt).toContain("Do not copy yourself or change system/safety rules");
   });
 
   it("includes voice hint when provided", () => {
@@ -220,7 +218,7 @@ describe("buildAgentSystemPrompt", () => {
     });
 
     expect(prompt).toContain("## FlowHelm CLI Quick Reference");
-    expect(prompt).toContain("flowhelm gateway restart");
+    expect(prompt).toContain("flowhelm gateway <cmd>");
     expect(prompt).toContain("Do not invent commands");
   });
 
@@ -229,10 +227,8 @@ describe("buildAgentSystemPrompt", () => {
       workspaceDir: "/tmp/flowhelm",
     });
 
-    expect(prompt).toContain("`[System Message] ...` blocks are internal context");
-    expect(prompt).toContain("are not user-visible by default");
-    expect(prompt).toContain("reports completed cron/subagent work");
-    expect(prompt).toContain("rewrite it in your normal assistant voice");
+    expect(prompt).toContain("`[System Message]` blocks are internal; do not forward raw");
+    expect(prompt).toContain("Rewrite updates in your voice");
   });
 
   it("guides subagent workflows to avoid polling loops", () => {
@@ -241,10 +237,10 @@ describe("buildAgentSystemPrompt", () => {
     });
 
     expect(prompt).toContain(
-      "For long waits, avoid rapid poll loops: use exec with enough yieldMs or process(action=poll, timeout=<ms>).",
+      "Avoid rapid poll loops: use exec(yieldMs) or process(action=poll).",
     );
-    expect(prompt).toContain("Completion is push-based: it will auto-announce when done.");
-    expect(prompt).toContain("Do not poll `subagents list` / `sessions_list` in a loop");
+    expect(prompt).toContain("Completion is push-based (auto-announces).");
+    expect(prompt).toContain("Do not poll subagents/sessions in a loop");
   });
 
   it("lists available tools when provided", () => {
@@ -253,7 +249,7 @@ describe("buildAgentSystemPrompt", () => {
       toolNames: ["exec", "sessions_list", "sessions_history", "sessions_send"],
     });
 
-    expect(prompt).toContain("Tool availability (filtered by policy):");
+    expect(prompt).toContain("Availability (case-sensitive):");
     expect(prompt).toContain("sessions_list");
     expect(prompt).toContain("sessions_history");
     expect(prompt).toContain("sessions_send");
@@ -271,11 +267,11 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain("- Read: Read file contents");
     expect(prompt).toContain("- Exec: Run shell commands");
     expect(prompt).toContain(
-      "- If exactly one skill clearly applies: read its SKILL.md at <location> with `Read`, then follow it.",
+      "Read SKILL.md at <location> with `Read`.",
     );
     expect(prompt).toContain("FlowHelm docs: /tmp/flowhelm/docs");
     expect(prompt).toContain(
-      "For FlowHelm behavior, commands, config, or architecture: consult local docs first.",
+      "Consult local docs first. Run `flowhelm status` yourself when possible.",
     );
   });
 
@@ -288,7 +284,7 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain("## Documentation");
     expect(prompt).toContain("FlowHelm docs: /tmp/flowhelm/docs");
     expect(prompt).toContain(
-      "For FlowHelm behavior, commands, config, or architecture: consult local docs first.",
+      "Consult local docs first. Run `flowhelm status` yourself when possible.",
     );
   });
 
@@ -407,7 +403,7 @@ describe("buildAgentSystemPrompt", () => {
 
     expect(prompt).toContain("## Skills");
     expect(prompt).toContain(
-      "- If exactly one skill clearly applies: read its SKILL.md at <location> with `read`, then follow it.",
+      "Read SKILL.md at <location> with `read`.",
     );
   });
 
@@ -500,7 +496,7 @@ describe("buildAgentSystemPrompt", () => {
     });
 
     expect(prompt).toContain("buttons=[[{text,callback_data,style?}]]");
-    expect(prompt).toContain("`style` can be `primary`, `success`, or `danger`");
+    expect(prompt).toContain("(primary|success|danger)");
   });
 
   it("includes runtime provider capabilities when present", () => {
@@ -587,7 +583,7 @@ describe("buildAgentSystemPrompt", () => {
 
     expect(prompt).toContain("Your working directory is: /workspace");
     expect(prompt).toContain(
-      "For read/write/edit/apply_patch, file paths resolve against host workspace: /tmp/flowhelm. For bash/exec commands, use sandbox container paths under /workspace (or relative paths from that workdir), not host paths.",
+      "File tools resolve against host: /tmp/flowhelm. Bash/exec use sandbox paths under /workspace. Prefer relative paths.",
     );
     expect(prompt).toContain("Sandbox container workdir: /workspace");
     expect(prompt).toContain(
@@ -622,18 +618,15 @@ describe("buildSubagentSystemPrompt", () => {
       maxSpawnDepth: 2,
     });
 
-    expect(prompt).toContain("## Sub-Agent Spawning");
-    expect(prompt).toContain("You CAN spawn your own sub-agents");
+    expect(prompt).toContain("## Spawning");
     expect(prompt).toContain("sessions_spawn");
-    expect(prompt).toContain("`subagents` tool");
-    expect(prompt).toContain("announce their results back to you automatically");
-    expect(prompt).toContain("Do NOT repeatedly poll `subagents list`");
+    expect(prompt).toContain("`subagents` to steer/kill/check status");
+    expect(prompt).toContain("Auto-announces results");
+    expect(prompt).toContain("Do NOT poll `subagents list` in a loop");
     expect(prompt).toContain("spawned by the main agent");
-    expect(prompt).toContain("reported to the main agent");
-    expect(prompt).toContain("[compacted: tool output removed to free context]");
-    expect(prompt).toContain("[truncated: output exceeded context limit]");
-    expect(prompt).toContain("offset/limit");
-    expect(prompt).toContain("instead of full-file `cat`");
+    expect(prompt).toContain("reported to main agent");
+    expect(prompt).toContain("If output is `[compacted]` or `[truncated]`");
+    expect(prompt).toContain("read` offset/limit");
   });
 
   it("renders depth-2 leaf guidance with parent orchestrator labels", () => {
@@ -644,11 +637,11 @@ describe("buildSubagentSystemPrompt", () => {
       maxSpawnDepth: 2,
     });
 
-    expect(prompt).toContain("## Sub-Agent Spawning");
+    expect(prompt).toContain("## Spawning");
     expect(prompt).toContain("leaf worker");
-    expect(prompt).toContain("CANNOT spawn further sub-agents");
+    expect(prompt).toContain("CANNOT spawn sub-agents");
     expect(prompt).toContain("spawned by the parent orchestrator");
-    expect(prompt).toContain("reported to the parent orchestrator");
+    expect(prompt).toContain("reported to parent orchestrator");
   });
 
   it("omits spawning guidance for depth-1 leaf agents", () => {

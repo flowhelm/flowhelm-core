@@ -34,12 +34,14 @@ export async function resolveCommandsSystemPromptBundle(
     sessionKey: params.sessionKey,
     sessionId: params.sessionEntry?.sessionId,
   });
-  const skillsSnapshot = (() => {
+  const skillsSnapshot = await (async () => {
     try {
-      return buildWorkspaceSkillSnapshot(workspaceDir, {
+      return await buildWorkspaceSkillSnapshot(workspaceDir, {
         config: params.cfg,
+        agentId: params.agentId,
         eligibility: { remote: getRemoteSkillEligibility() },
         snapshotVersion: getSkillsSnapshotVersion(workspaceDir),
+        prompt: params.command.commandBodyNormalized,
       });
     } catch {
       return { prompt: "", skills: [], resolvedSkills: [] };

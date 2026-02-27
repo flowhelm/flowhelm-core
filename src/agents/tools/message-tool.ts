@@ -38,7 +38,7 @@ function actionNeedsExplicitTarget(action: ChannelMessageActionName): boolean {
 function buildRoutingSchema() {
   return {
     channel: Type.Optional(Type.String()),
-    target: Type.Optional(channelTargetSchema({ description: "Target channel/user id or name." })),
+    target: Type.Optional(channelTargetSchema({ description: "Target id or name." })),
     targets: Type.Optional(channelTargetsSchema()),
     accountId: Type.Optional(Type.String()),
     dryRun: Type.Optional(Type.Boolean()),
@@ -53,13 +53,13 @@ function buildSendSchema(options: {
     message: Type.Optional(Type.String()),
     media: Type.Optional(
       Type.String({
-        description: "Media URL or local path. data: URLs are not supported here, use buffer.",
+        description: "Media URL or local path.",
       }),
     ),
     filename: Type.Optional(Type.String()),
     buffer: Type.Optional(
       Type.String({
-        description: "Base64 payload for attachments (optionally a data: URL).",
+        description: "Base64 payload (optionally data: URL).",
       }),
     ),
     contentType: Type.Optional(Type.String()),
@@ -72,7 +72,7 @@ function buildSendSchema(options: {
     asVoice: Type.Optional(Type.Boolean()),
     silent: Type.Optional(Type.Boolean()),
     quoteText: Type.Optional(
-      Type.String({ description: "Quote text for Telegram reply_parameters" }),
+      Type.String({ description: "Quote text for Telegram reply." }),
     ),
     bestEffort: Type.Optional(Type.Boolean()),
     gifPlayback: Type.Optional(Type.Boolean()),
@@ -86,7 +86,7 @@ function buildSendSchema(options: {
           }),
         ),
         {
-          description: "Telegram inline keyboard buttons (array of button rows)",
+          description: "Telegram inline buttons (array of rows).",
         },
       ),
     ),
@@ -95,7 +95,7 @@ function buildSendSchema(options: {
         {},
         {
           additionalProperties: true,
-          description: "Adaptive Card JSON object (when supported by the channel)",
+          description: "Adaptive Card JSON object.",
         },
       ),
     ),
@@ -114,14 +114,14 @@ function buildReactionSchema() {
     messageId: Type.Optional(
       Type.String({
         description:
-          "Target message id for reaction. For Telegram, if omitted, defaults to the current inbound message id when available.",
+          "Target message id. Defaults to current inbound id.",
       }),
     ),
     message_id: Type.Optional(
       Type.String({
         // Intentional duplicate alias for tool-schema discoverability in LLMs.
         description:
-          "snake_case alias of messageId. For Telegram, if omitted, defaults to the current inbound message id when available.",
+          "alias of messageId. Defaults to current inbound id.",
       }),
     ),
     emoji: Type.Optional(Type.String()),
@@ -152,10 +152,10 @@ function buildPollSchema() {
 function buildChannelTargetSchema() {
   return {
     channelId: Type.Optional(
-      Type.String({ description: "Channel id filter (search/thread list/event create)." }),
+      Type.String({ description: "Channel id filter." }),
     ),
     channelIds: Type.Optional(
-      Type.Array(Type.String({ description: "Channel id filter (repeatable)." })),
+      Type.Array(Type.String({ description: "Channel id filters." })),
     ),
     userId: Type.Optional(Type.String()),
     authorId: Type.Optional(Type.String()),
