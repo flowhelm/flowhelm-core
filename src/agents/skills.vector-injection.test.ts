@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { createEmbeddingProvider } from "../memory/embeddings.js";
 import { resolveSkillsPromptForRun } from "./skills.js";
 import type { SkillEntry } from "./skills/types.js";
-import { createEmbeddingProvider } from "../memory/embeddings.js";
 
 vi.mock("../memory/embeddings.js", () => ({
   createEmbeddingProvider: vi.fn(),
@@ -71,11 +71,25 @@ describe("Dynamic Skill Injection (Vector-Based)", () => {
 
   it("includes all skills when dynamic injection is disabled", async () => {
     const entry1: SkillEntry = {
-      skill: { name: "skill1", description: "Desc 1", filePath: "f1", baseDir: "d1", source: "s", disableModelInvocation: false },
+      skill: {
+        name: "skill1",
+        description: "Desc 1",
+        filePath: "f1",
+        baseDir: "d1",
+        source: "s",
+        disableModelInvocation: false,
+      },
       frontmatter: {},
     };
     const entry2: SkillEntry = {
-      skill: { name: "skill2", description: "Desc 2", filePath: "f2", baseDir: "d2", source: "s", disableModelInvocation: false },
+      skill: {
+        name: "skill2",
+        description: "Desc 2",
+        filePath: "f2",
+        baseDir: "d2",
+        source: "s",
+        disableModelInvocation: false,
+      },
       frontmatter: {},
     };
 

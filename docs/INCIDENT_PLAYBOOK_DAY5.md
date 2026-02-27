@@ -3,11 +3,13 @@
 Status: Implemented
 
 ## Severity levels
+
 - **P1**: Core service unavailable, cross-context leakage risk, repeated failed automation with user impact.
 - **P2**: Major degradation, delayed processing, partial delivery failures.
 - **P3**: Minor degradation, single-job issues without broad impact.
 
 ## Incident response flow
+
 1. **Declare**
    - Open incident with title, start time (UTC), owner.
 2. **Stabilize**
@@ -24,6 +26,7 @@ Status: Implemented
    - Record root cause, corrective action, prevention action.
 
 ## Required incident record fields
+
 - Incident ID
 - Severity
 - Start/End UTC
@@ -35,6 +38,7 @@ Status: Implemented
 - Prevention actions
 
 ## First 5-minute actions checklist
+
 - [ ] Assign incident owner
 - [ ] Freeze duplicate schedulers for impacted stream
 - [ ] Capture current cron/job inventory
@@ -42,6 +46,7 @@ Status: Implemented
 - [ ] Post concise status update in alerts channel
 
 ## Exit criteria
+
 - [ ] User-facing impact stopped
 - [ ] Single-writer behavior restored
 - [ ] Verification checks green

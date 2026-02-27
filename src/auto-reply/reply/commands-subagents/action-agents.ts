@@ -1,9 +1,6 @@
 import type { CommandHandlerResult } from "../commands-types.js";
 import { formatRunLabel, sortSubagentRuns } from "../subagents-utils.js";
-import {
-  type SubagentsCommandContext,
-  stopWithText,
-} from "./shared.js";
+import { type SubagentsCommandContext, stopWithText } from "./shared.js";
 
 export function handleSubagentsAgentsAction(ctx: SubagentsCommandContext): CommandHandlerResult {
   const { runs } = ctx;

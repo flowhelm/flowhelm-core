@@ -3,6 +3,7 @@
 Status: Implemented
 
 ## Required fields for every delegated task
+
 1. Objective (single-task)
 2. Scope boundaries (in/out)
 3. Allowed tools/actions
@@ -26,6 +27,7 @@ Rollback: <how to undo>
 ```
 
 ## Anti-patterns (blocked)
+
 - Compound goals in one delegation
 - Unbounded tool use
 - Missing rollback path for risky changes

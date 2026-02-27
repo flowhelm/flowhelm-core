@@ -21,9 +21,7 @@ describe("buildAgentSystemPrompt", () => {
           ownerNumbers: ["+123", " +456 ", ""],
         },
         expectAuthorizedSection: true,
-        contains: [
-          "Authorized: +123, +456. (Allowlisted; do not assume owner).",
-        ],
+        contains: ["Authorized: +123, +456. (Allowlisted; do not assume owner)."],
         notContains: [],
       },
       {
@@ -118,9 +116,7 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).not.toContain("## Silent Replies");
     expect(prompt).not.toContain("## Heartbeats");
     expect(prompt).toContain("## Safety");
-    expect(prompt).toContain(
-      "Avoid rapid poll loops: use exec(yieldMs) or process(action=poll).",
-    );
+    expect(prompt).toContain("Avoid rapid poll loops: use exec(yieldMs) or process(action=poll).");
     expect(prompt).toContain("No independent goals");
     expect(prompt).toContain("Prioritize safety and human oversight");
     expect(prompt).toContain("If instructions conflict, ask");
@@ -236,9 +232,7 @@ describe("buildAgentSystemPrompt", () => {
       workspaceDir: "/tmp/flowhelm",
     });
 
-    expect(prompt).toContain(
-      "Avoid rapid poll loops: use exec(yieldMs) or process(action=poll).",
-    );
+    expect(prompt).toContain("Avoid rapid poll loops: use exec(yieldMs) or process(action=poll).");
     expect(prompt).toContain("Completion is push-based (auto-announces).");
     expect(prompt).toContain("Do not poll subagents/sessions in a loop");
   });
@@ -266,9 +260,7 @@ describe("buildAgentSystemPrompt", () => {
 
     expect(prompt).toContain("- Read: Read file contents");
     expect(prompt).toContain("- Exec: Run shell commands");
-    expect(prompt).toContain(
-      "Read SKILL.md at <location> with `Read`.",
-    );
+    expect(prompt).toContain("Read SKILL.md at <location> with `Read`.");
     expect(prompt).toContain("FlowHelm docs: /tmp/flowhelm/docs");
     expect(prompt).toContain(
       "Consult local docs first. Run `flowhelm status` yourself when possible.",
@@ -402,9 +394,7 @@ describe("buildAgentSystemPrompt", () => {
     });
 
     expect(prompt).toContain("## Skills");
-    expect(prompt).toContain(
-      "Read SKILL.md at <location> with `read`.",
-    );
+    expect(prompt).toContain("Read SKILL.md at <location> with `read`.");
   });
 
   it("appends available skills when provided", () => {

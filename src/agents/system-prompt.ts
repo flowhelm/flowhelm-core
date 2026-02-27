@@ -416,7 +416,7 @@ export function buildAgentSystemPrompt(params: {
           "- sessions_history: fetch history",
           "- sessions_send: cross-session send",
           "- subagents: sub-agent control",
-          '- session_status: usage/model info (📊 session_status)',
+          "- session_status: usage/model info (📊 session_status)",
         ].join("\n"),
     "TOOLS.md is user guidance only.",
     `Avoid rapid poll loops: use ${execToolName}(yieldMs) or ${processToolName}(action=poll).`,
@@ -572,12 +572,8 @@ export function buildAgentSystemPrompt(params: {
         : params.sandboxInfo.hostBrowserAllowed === false
           ? "Host browser control: blocked."
           : "",
-      params.sandboxInfo.elevated?.allowed
-        ? "Elevated exec is available for this session."
-        : "",
-      params.sandboxInfo.elevated?.allowed
-        ? "User can toggle with /elevated on|off|ask|full."
-        : "",
+      params.sandboxInfo.elevated?.allowed ? "Elevated exec is available for this session." : "",
+      params.sandboxInfo.elevated?.allowed ? "User can toggle with /elevated on|off|ask|full." : "",
       params.sandboxInfo.elevated?.allowed
         ? "You may also send /elevated on|off|ask|full when needed."
         : "",

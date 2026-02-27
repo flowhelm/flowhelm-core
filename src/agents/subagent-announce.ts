@@ -934,20 +934,14 @@ export function buildSubagentSystemPrompt(params: {
       "",
     );
   } else if (childDepth >= 2) {
-    lines.push(
-      "## Spawning",
-      "You are a leaf worker; CANNOT spawn sub-agents.",
-      "",
-    );
+    lines.push("## Spawning", "You are a leaf worker; CANNOT spawn sub-agents.", "");
   }
 
   lines.push(
     "## Context",
     ...[
       params.label ? `- Label: ${params.label}` : undefined,
-      params.requesterSessionKey
-        ? `- Requester: ${params.requesterSessionKey}.`
-        : undefined,
+      params.requesterSessionKey ? `- Requester: ${params.requesterSessionKey}.` : undefined,
       `- Your session: ${params.childSessionKey}.`,
     ].filter((line): line is string => line !== undefined),
     "",

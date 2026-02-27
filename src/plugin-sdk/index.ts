@@ -124,9 +124,7 @@ export {
   type ResolveProviderRuntimeGroupPolicyParams,
   warnMissingProviderGroupPolicyFallbackOnce,
 } from "../config/runtime-group-policy.js";
-export {
-  TelegramConfigSchema,
-} from "../config/zod-schema.providers-core.js";
+export { TelegramConfigSchema } from "../config/zod-schema.providers-core.js";
 export {
   BlockStreamingCoalesceSchema,
   DmConfigSchema,
@@ -240,14 +238,8 @@ export {
   resolveMentionGating,
   resolveMentionGatingWithBypass,
 } from "../channels/mention-gating.js";
-export type {
-  AckReactionGateParams,
-  AckReactionScope,
-} from "../channels/ack-reactions.js";
-export {
-  removeAckReactionAfterReply,
-  shouldAckReaction,
-} from "../channels/ack-reactions.js";
+export type { AckReactionGateParams, AckReactionScope } from "../channels/ack-reactions.js";
+export { removeAckReactionAfterReply, shouldAckReaction } from "../channels/ack-reactions.js";
 export { createTypingCallbacks } from "../channels/typing.js";
 export { createReplyPrefixContext, createReplyPrefixOptions } from "../channels/reply-prefix.js";
 export { logAckFailure, logInboundDrop, logTypingFailure } from "../channels/logging.js";

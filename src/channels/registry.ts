@@ -4,9 +4,7 @@ import type { ChannelId } from "./plugins/types.js";
 
 // Channel docking: add new core channels here (order + meta + aliases), then
 // register the plugin in its extension entrypoint and keep protocol IDs in sync.
-export const CHAT_CHANNEL_ORDER = [
-  "telegram",
-] as const;
+export const CHAT_CHANNEL_ORDER = ["telegram"] as const;
 
 export type ChatChannelId = (typeof CHAT_CHANNEL_ORDER)[number];
 
@@ -32,8 +30,7 @@ const CHAT_CHANNEL_META: Record<ChatChannelId, ChannelMeta> = {
   },
 };
 
-export const CHAT_CHANNEL_ALIASES: Record<string, ChatChannelId> = {
-};
+export const CHAT_CHANNEL_ALIASES: Record<string, ChatChannelId> = {};
 
 const normalizeChannelKey = (raw?: string | null): string | undefined => {
   const normalized = raw?.trim().toLowerCase();

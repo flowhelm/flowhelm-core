@@ -3,9 +3,11 @@
 Status: Implemented
 
 ## Objective
+
 Provide a single, concise operational model that links control flow, execution flow, scheduler policy, incident handling, and quality gates.
 
 ## Core Model
+
 1. **Control plane**
    - Intake, planning, approvals, escalation, and final user-facing delivery.
 2. **Execution plane**
@@ -14,6 +16,7 @@ Provide a single, concise operational model that links control flow, execution f
    - Low-noise status/incident signaling with single-writer ownership.
 
 ## Lifecycle of a request
+
 1. Intake + classify (control plane)
 2. Contracted delegation (if needed)
 3. Execution + evidence capture
@@ -22,6 +25,7 @@ Provide a single, concise operational model that links control flow, execution f
 6. Memory + runbook update when significant
 
 ## Standards (must hold)
+
 - One task per delegation
 - One writer per recurring topic
 - One delivery mode per automation job
@@ -29,6 +33,7 @@ Provide a single, concise operational model that links control flow, execution f
 - Evidence-backed completion summaries
 
 ## First 5 minutes troubleshooting
+
 1. Check scheduler ownership + overlap
 2. Check latest failed job/run IDs
 3. Check delivery-mode mismatch
@@ -36,6 +41,7 @@ Provide a single, concise operational model that links control flow, execution f
 5. Trigger circuit breaker if noisy failures repeat
 
 ## Linked references
+
 - `OPENCLAW_SETUP_V2_PLAN.md`
 - `SCHEDULER_INVENTORY_DAY2.md`
 - `SCHEDULER_POLICY_DAY3.md`

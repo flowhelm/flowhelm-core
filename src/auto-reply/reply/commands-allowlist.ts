@@ -277,8 +277,7 @@ function resolveChannelAllowFromPaths(
   channelId: ChannelId,
   scope: AllowlistScope,
 ): string[] | null {
-  const supportsGroupAllowlist =
-    channelId === "telegram";
+  const supportsGroupAllowlist = channelId === "telegram";
   if (scope === "all") {
     return null;
   }

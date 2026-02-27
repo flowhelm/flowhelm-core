@@ -6,12 +6,10 @@ import {
   loadSkillsFromDir,
   type Skill,
 } from "@mariozechner/pi-coding-agent";
+import { resolveMemorySearchConfig } from "../../agents/memory-search.js";
 import type { FlowHelmConfig } from "../../config/config.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
-import { resolveMemorySearchConfig } from "../../agents/memory-search.js";
-import {
-  createEmbeddingProvider,
-} from "../../memory/embeddings.js";
+import { createEmbeddingProvider } from "../../memory/embeddings.js";
 import { CONFIG_DIR, resolveUserPath } from "../../utils.js";
 import { resolveSandboxPath } from "../sandbox-paths.js";
 import { resolveBundledSkillsDir } from "./bundled-dir.js";

@@ -45,10 +45,7 @@ function buildRoutingSchema() {
   };
 }
 
-function buildSendSchema(options: {
-  includeButtons: boolean;
-  includeCards: boolean;
-}) {
+function buildSendSchema(options: { includeButtons: boolean; includeCards: boolean }) {
   const props: Record<string, unknown> = {
     message: Type.Optional(Type.String()),
     media: Type.Optional(
@@ -71,9 +68,7 @@ function buildSendSchema(options: {
     threadId: Type.Optional(Type.String()),
     asVoice: Type.Optional(Type.Boolean()),
     silent: Type.Optional(Type.Boolean()),
-    quoteText: Type.Optional(
-      Type.String({ description: "Quote text for Telegram reply." }),
-    ),
+    quoteText: Type.Optional(Type.String({ description: "Quote text for Telegram reply." })),
     bestEffort: Type.Optional(Type.Boolean()),
     gifPlayback: Type.Optional(Type.Boolean()),
     buttons: Type.Optional(
@@ -113,15 +108,13 @@ function buildReactionSchema() {
   return {
     messageId: Type.Optional(
       Type.String({
-        description:
-          "Target message id. Defaults to current inbound id.",
+        description: "Target message id. Defaults to current inbound id.",
       }),
     ),
     message_id: Type.Optional(
       Type.String({
         // Intentional duplicate alias for tool-schema discoverability in LLMs.
-        description:
-          "alias of messageId. Defaults to current inbound id.",
+        description: "alias of messageId. Defaults to current inbound id.",
       }),
     ),
     emoji: Type.Optional(Type.String()),
@@ -151,22 +144,15 @@ function buildPollSchema() {
 
 function buildChannelTargetSchema() {
   return {
-    channelId: Type.Optional(
-      Type.String({ description: "Channel id filter." }),
-    ),
-    channelIds: Type.Optional(
-      Type.Array(Type.String({ description: "Channel id filters." })),
-    ),
+    channelId: Type.Optional(Type.String({ description: "Channel id filter." })),
+    channelIds: Type.Optional(Type.Array(Type.String({ description: "Channel id filters." }))),
     userId: Type.Optional(Type.String()),
     authorId: Type.Optional(Type.String()),
     authorIds: Type.Optional(Type.Array(Type.String())),
   };
 }
 
-function buildMessageToolSchemaProps(options: {
-  includeButtons: boolean;
-  includeCards: boolean;
-}) {
+function buildMessageToolSchemaProps(options: { includeButtons: boolean; includeCards: boolean }) {
   return {
     ...buildRoutingSchema(),
     ...buildSendSchema(options),
@@ -216,9 +202,9 @@ function resolveMessageToolSchemaActions(params: {
   const currentChannel = normalizeMessageChannel(params.currentChannelProvider);
   if (currentChannel) {
     const scopedActions = listChannelSupportedActions({
-        cfg: params.cfg,
-        channel: currentChannel,
-      });
+      cfg: params.cfg,
+      channel: currentChannel,
+    });
     const withSend = new Set<string>(["send", ...scopedActions]);
     return Array.from(withSend);
   }
@@ -263,9 +249,9 @@ function buildMessageToolDescription(options?: {
   // If we have a current channel, show only its supported actions
   if (options?.currentChannel) {
     const channelActions = listChannelSupportedActions({
-        cfg: options.config,
-        channel: options.currentChannel,
-      });
+      cfg: options.config,
+      channel: options.currentChannel,
+    });
     if (channelActions.length > 0) {
       // Always include "send" as a base action
       const allActions = new Set(["send", ...channelActions]);

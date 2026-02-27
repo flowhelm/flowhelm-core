@@ -153,9 +153,7 @@ export function buildInboundUserContextPrefix(ctx: TemplateContext): string {
       };
   if (senderInfo?.label) {
     blocks.push(
-      ["Sender (untrusted metadata):", "```json", minifyJson(senderInfo), "```"].join(
-        "\n",
-      ),
+      ["Sender (untrusted metadata):", "```json", minifyJson(senderInfo), "```"].join("\n"),
     );
   }
 
@@ -175,13 +173,11 @@ export function buildInboundUserContextPrefix(ctx: TemplateContext): string {
       [
         "Replied message (untrusted, for context):",
         "```json",
-        minifyJson(
-          {
-            sender_label: safeTrim(ctx.ReplyToSender),
-            is_quote: ctx.ReplyToIsQuote === true ? true : undefined,
-            body: ctx.ReplyToBody,
-          }
-        ),
+        minifyJson({
+          sender_label: safeTrim(ctx.ReplyToSender),
+          is_quote: ctx.ReplyToIsQuote === true ? true : undefined,
+          body: ctx.ReplyToBody,
+        }),
         "```",
       ].join("\n"),
     );
@@ -192,17 +188,15 @@ export function buildInboundUserContextPrefix(ctx: TemplateContext): string {
       [
         "Forwarded message context (untrusted metadata):",
         "```json",
-        minifyJson(
-          {
-            from: safeTrim(ctx.ForwardedFrom),
-            type: safeTrim(ctx.ForwardedFromType),
-            username: safeTrim(ctx.ForwardedFromUsername),
-            title: safeTrim(ctx.ForwardedFromTitle),
-            signature: safeTrim(ctx.ForwardedFromSignature),
-            chat_type: safeTrim(ctx.ForwardedFromChatType),
-            date_ms: typeof ctx.ForwardedDate === "number" ? ctx.ForwardedDate : undefined,
-          }
-        ),
+        minifyJson({
+          from: safeTrim(ctx.ForwardedFrom),
+          type: safeTrim(ctx.ForwardedFromType),
+          username: safeTrim(ctx.ForwardedFromUsername),
+          title: safeTrim(ctx.ForwardedFromTitle),
+          signature: safeTrim(ctx.ForwardedFromSignature),
+          chat_type: safeTrim(ctx.ForwardedFromChatType),
+          date_ms: typeof ctx.ForwardedDate === "number" ? ctx.ForwardedDate : undefined,
+        }),
         "```",
       ].join("\n"),
     );
@@ -218,7 +212,7 @@ export function buildInboundUserContextPrefix(ctx: TemplateContext): string {
             sender: entry.sender,
             timestamp_ms: entry.timestamp,
             body: entry.body,
-          }))
+          })),
         ),
         "```",
       ].join("\n"),

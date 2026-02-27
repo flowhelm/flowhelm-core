@@ -1,6 +1,6 @@
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
-import { createSessionSlug as createSessionSlugId } from "./session-slug.js";
 import { sanitizeTerminalOutput } from "./bash-tools.output-sanitizer.js";
+import { createSessionSlug as createSessionSlugId } from "./session-slug.js";
 
 const DEFAULT_JOB_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const MIN_JOB_TTL_MS = 60 * 1000; // 1 minute

@@ -1,8 +1,5 @@
 import type { CommandHandlerResult } from "../commands-types.js";
-import {
-  type SubagentsCommandContext,
-  stopWithText,
-} from "./shared.js";
+import { type SubagentsCommandContext, stopWithText } from "./shared.js";
 
 export async function handleSubagentsFocusAction(
   _ctx: SubagentsCommandContext,

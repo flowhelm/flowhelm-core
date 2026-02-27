@@ -1,7 +1,5 @@
 import { z } from "zod";
-import {
-  resolveTelegramPreviewStreamMode,
-} from "./discord-preview-streaming.js";
+import { resolveTelegramPreviewStreamMode } from "./discord-preview-streaming.js";
 import {
   normalizeTelegramCommandDescription,
   normalizeTelegramCommandName,

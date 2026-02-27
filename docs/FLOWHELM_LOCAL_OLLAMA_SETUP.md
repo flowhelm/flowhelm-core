@@ -1,6 +1,7 @@
 # Flowhelm + Ollama (small model) local/server setup
 
 This stack runs:
+
 - Flowhelm gateway container
 - Ollama container (local model serving)
 
@@ -20,6 +21,7 @@ docker compose --env-file .env.flowhelm-local -f docker-compose.flowhelm-local.y
 ## 3) Pull a small Ollama model
 
 Recommended smallest useful baseline:
+
 - `qwen2.5:0.5b`
 
 ```bash

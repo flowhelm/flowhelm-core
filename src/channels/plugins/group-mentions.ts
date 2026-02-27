@@ -3,9 +3,7 @@ import {
   resolveChannelGroupRequireMention,
   resolveChannelGroupToolsPolicy,
 } from "../../config/group-policy.js";
-import type {
-  GroupToolPolicyConfig,
-} from "../../config/types.tools.js";
+import type { GroupToolPolicyConfig } from "../../config/types.tools.js";
 import type { ChannelGroupContext } from "./types.js";
 
 type GroupMentionParams = ChannelGroupContext;

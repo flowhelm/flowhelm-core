@@ -65,11 +65,11 @@ jobs:
           # Ensure directories exist
           mkdir -p "$FLOWHELM_CONFIG_DIR"
           mkdir -p "$FLOWHELM_WORKSPACE_DIR"
-          
+
           # Stop and remove existing container if it exists
           docker stop flowhelm-dev || true
           docker rm flowhelm-dev || true
-          
+
           # Start new container
           docker run -d \
             --name flowhelm-dev \

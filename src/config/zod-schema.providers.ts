@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { ChannelHeartbeatVisibilitySchema } from "./zod-schema.channels.js";
 import { GroupPolicySchema } from "./zod-schema.core.js";
-import {
-  TelegramConfigSchema,
-} from "./zod-schema.providers-core.js";
+import { TelegramConfigSchema } from "./zod-schema.providers-core.js";
 
 export * from "./zod-schema.providers-core.js";
 export { ChannelHeartbeatVisibilitySchema } from "./zod-schema.channels.js";

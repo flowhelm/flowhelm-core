@@ -14,15 +14,19 @@ Status: Completed
 ## Inventory results
 
 ### A) OpenClaw cron — orchestrator host
+
 - Active jobs: **0**
 - Overlap risk: **none**
 
 ### B) OpenClaw cron — Flowhelm server (`192.168.0.76`)
+
 - Active jobs: **0**
 - Overlap risk: **none**
 
 ### C) Host cron — app server (`192.168.0.130`)
+
 Active jobs:
+
 1. `0 21 * * 5 APP_DIR=/home/openclaw/optimaclaw /home/openclaw/optimaclaw/scripts/run_weekly_scorecard.sh`
    - Topic: weekly scorecard reporting
    - Owner: strategy/reporting lane

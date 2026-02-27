@@ -1,8 +1,5 @@
 import type { CommandHandlerResult } from "../commands-types.js";
-import {
-  type SubagentsCommandContext,
-  stopWithText,
-} from "./shared.js";
+import { type SubagentsCommandContext, stopWithText } from "./shared.js";
 
 export function handleSubagentsUnfocusAction(_ctx: SubagentsCommandContext): CommandHandlerResult {
   return stopWithText("⚠️ /unfocus is only available on Discord.");

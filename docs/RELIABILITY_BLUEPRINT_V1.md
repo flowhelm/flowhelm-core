@@ -23,14 +23,17 @@ Purpose: A platform-agnostic blueprint for building optimized, resilient, and sc
 ## 2) Control-Plane / Execution-Plane Model
 
 ### Control Plane
+
 - Handles intake, planning, routing, policy enforcement, approvals, and quality gates.
 - Must remain low-noise and decision-focused.
 
 ### Execution Plane
+
 - Handles bounded task execution, tool calls, and implementation work.
 - Must operate under explicit scope + timeout constraints.
 
 ### Rule
+
 - Never combine orchestration and high-volume execution streams in the same operational lane without strict boundaries.
 
 ---
@@ -51,7 +54,9 @@ Purpose: A platform-agnostic blueprint for building optimized, resilient, and sc
 ## 4) Delegation & Handoff Reliability
 
 ### Task Contract (required)
+
 Each delegated task should include:
+
 - objective (single task)
 - allowed tools/actions
 - input context scope
@@ -60,13 +65,16 @@ Each delegated task should include:
 - escalation condition
 
 ### Quality Gate (required before user delivery)
+
 Validate:
+
 1. scope adherence
 2. technical correctness (evidence-backed)
 3. policy/safety compliance
 4. rollback/remediation path when relevant
 
 ### Anti-pattern to avoid
+
 - Compound multi-goal delegations without decomposition.
 
 ---
@@ -141,6 +149,7 @@ Validate:
 ## 10) Observability Blueprint
 
 ### Mandatory Signals
+
 - scheduler health
 - routing decisions
 - task lifecycle events
@@ -150,11 +159,13 @@ Validate:
 - policy gate pass/fail
 
 ### Logging Standard
+
 - structured JSON logs with correlation IDs
 - run IDs and dedupe keys on all automated outputs
 - clear severity levels and remediation hints
 
 ### Health SLO Examples
+
 - successful outbound status posts within SLA window
 - max tolerated duplicate output rate
 - max tolerated unresolved job failure streak
@@ -177,21 +188,25 @@ Validate:
 ## 12) Maturity Roadmap
 
 ### Level 1 — Foundational
+
 - explicit routing policy
 - single-writer scheduling
 - basic health checks
 
 ### Level 2 — Managed
+
 - quality gates on all delegated outputs
 - idempotent automation
 - structured observability with SLOs
 
 ### Level 3 — Resilient
+
 - automated circuit breakers
 - controlled failover paths
 - policy-driven autonomy levels
 
 ### Level 4 — Scalable
+
 - stable multi-lane orchestration
 - low-noise operations under high concurrency
 - evidence-driven continuous optimization
@@ -216,6 +231,7 @@ Validate:
 ## 14) Outcome Target
 
 A system that is:
+
 - **Optimized** (cost-aware, context-efficient, policy-guided)
 - **Resilient** (fails safely, recovers deterministically, avoids noisy cascades)
 - **Scalable** (handles concurrent workflows without context collisions or delivery ambiguity)

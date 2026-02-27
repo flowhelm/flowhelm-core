@@ -13,15 +13,25 @@ export type CliDeps = {
 
 export function createDefaultDeps(): CliDeps {
   return {
-    sendMessageWhatsApp: async () => { throw new Error("WhatsApp stripped"); },
+    sendMessageWhatsApp: async () => {
+      throw new Error("WhatsApp stripped");
+    },
     sendMessageTelegram: async (...args) => {
       const { sendMessageTelegram } = await import("../telegram/send.js");
       return await sendMessageTelegram(...args);
     },
-    sendMessageDiscord: async () => { throw new Error("Discord stripped"); },
-    sendMessageSlack: async () => { throw new Error("Slack stripped"); },
-    sendMessageSignal: async () => { throw new Error("Signal stripped"); },
-    sendMessageIMessage: async () => { throw new Error("iMessage stripped"); },
+    sendMessageDiscord: async () => {
+      throw new Error("Discord stripped");
+    },
+    sendMessageSlack: async () => {
+      throw new Error("Slack stripped");
+    },
+    sendMessageSignal: async () => {
+      throw new Error("Signal stripped");
+    },
+    sendMessageIMessage: async () => {
+      throw new Error("iMessage stripped");
+    },
   };
 }
 

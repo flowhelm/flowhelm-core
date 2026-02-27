@@ -128,7 +128,7 @@ export async function listMemoryFiles(
     for (const entry of entries) {
       const lowerName = entry.name.toLowerCase();
       const fullPath = path.join(workspaceDir, entry.name);
-      
+
       if (lowerName.startsWith("memory")) {
         const stat = await fs.stat(fullPath);
         if (stat.isDirectory()) {

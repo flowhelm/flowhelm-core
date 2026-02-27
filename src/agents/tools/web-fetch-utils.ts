@@ -215,7 +215,10 @@ function prePruneHtml(html: string): string {
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, "")
-    .replace(/<(nav|footer|aside|form|header|iframe|canvas|svg|map|audio|video)[\s\S]*?<\/\1>/gi, "")
+    .replace(
+      /<(nav|footer|aside|form|header|iframe|canvas|svg|map|audio|video)[\s\S]*?<\/\1>/gi,
+      "",
+    )
     .replace(/<(link|meta|base|input|button)[^>]*>/gi, "");
 }
 

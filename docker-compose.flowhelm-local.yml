@@ -16,7 +16,17 @@ services:
     ports:
       - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
       - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
-    command: ["node", "dist/index.js", "gateway", "--allow-unconfigured", "--bind", "${OPENCLAW_GATEWAY_BIND:-lan}", "--port", "18789"]
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--allow-unconfigured",
+        "--bind",
+        "${OPENCLAW_GATEWAY_BIND:-lan}",
+        "--port",
+        "18789",
+      ]
 
   ollama:
     image: ollama/ollama:latest
