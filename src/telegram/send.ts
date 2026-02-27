@@ -18,7 +18,7 @@ import { createSubsystemLogger } from "../logging/subsystem.js";
 import { mediaKindFromMime } from "../media/constants.js";
 import { isGifMedia } from "../media/mime.js";
 import { normalizePollInput, type PollInput } from "../polls.js";
-import { loadWebMedia } from "../web/media.js";
+import { loadMedia } from "../media/loader.js";
 import { type ResolvedTelegramAccount, resolveTelegramAccount } from "./accounts.js";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
 import { buildTelegramThreadParams } from "./bot/helpers.js";
@@ -548,9 +548,9 @@ export async function sendMessageTelegram(
   };
 
   if (mediaUrl) {
-    const media = await loadWebMedia(mediaUrl, {
+    const media = await loadMedia(mediaUrl, {
       maxBytes: opts.maxBytes,
-      localRoots: opts.mediaLocalRoots,
+      localRoots: opts.mediaLocalRoots as string[] | undefined,
     });
     const kind = mediaKindFromMime(media.contentType ?? undefined);
     const isGif = isGifMedia({

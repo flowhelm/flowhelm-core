@@ -33,7 +33,7 @@ afterAll(async () => {
 });
 
 describe("buildWorkspaceSkillsPrompt", () => {
-  const buildPrompt = (
+  const buildPrompt = async (
     workspaceDir: string,
     opts?: Parameters<typeof buildWorkspaceSkillsPrompt>[1],
   ) =>
@@ -77,7 +77,7 @@ describe("buildWorkspaceSkillsPrompt", () => {
       }),
     );
 
-    const prompt = buildPrompt(targetWorkspace, {
+    const prompt = await buildPrompt(targetWorkspace, {
       bundledSkillsDir: path.join(targetWorkspace, ".bundled"),
       managedSkillsDir: path.join(targetWorkspace, ".managed"),
     });
@@ -161,14 +161,14 @@ describe("buildWorkspaceSkillsPrompt", () => {
       body: "# Nano Banana\n",
     });
 
-    withEnv({ GEMINI_API_KEY: undefined }, () => {
-      const missingPrompt = buildPrompt(workspaceDir, {
+    await withEnv({ GEMINI_API_KEY: undefined }, async () => {
+      const missingPrompt = await buildPrompt(workspaceDir, {
         managedSkillsDir: path.join(workspaceDir, ".managed"),
         config: { skills: { entries: { "nano-banana-pro": { apiKey: "" } } } },
       });
       expect(missingPrompt).not.toContain("nano-banana-pro");
 
-      const enabledPrompt = buildPrompt(workspaceDir, {
+      const enabledPrompt = await buildPrompt(workspaceDir, {
         managedSkillsDir: path.join(workspaceDir, ".managed"),
         config: {
           skills: { entries: { "nano-banana-pro": { apiKey: "test-key" } } },
@@ -190,14 +190,14 @@ describe("buildWorkspaceSkillsPrompt", () => {
       description: "Beta skill",
     });
 
-    const filteredPrompt = buildPrompt(workspaceDir, {
+    const filteredPrompt = await buildPrompt(workspaceDir, {
       managedSkillsDir: path.join(workspaceDir, ".managed"),
       skillFilter: ["alpha"],
     });
     expect(filteredPrompt).toContain("alpha");
     expect(filteredPrompt).not.toContain("beta");
 
-    const emptyPrompt = buildPrompt(workspaceDir, {
+    const emptyPrompt = await buildPrompt(workspaceDir, {
       managedSkillsDir: path.join(workspaceDir, ".managed"),
       skillFilter: [],
     });

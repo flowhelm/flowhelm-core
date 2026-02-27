@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ImageContent } from "@mariozechner/pi-ai";
 import { resolveUserPath } from "../../../utils.js";
-import { loadWebMedia } from "../../../web/media.js";
+import { loadMedia } from "../../../media/loader.js";
 import type { ImageSanitizationLimits } from "../../image-sanitization.js";
 import { resolveSandboxedBridgeMediaPath } from "../../sandbox-media-paths.js";
 import { assertSandboxPath } from "../../sandbox-paths.js";
@@ -135,7 +135,7 @@ export function detectImageReferences(prompt: string): DetectedImageRef[] {
 
   // Remote HTTP(S) URLs are intentionally ignored. Native image injection is local-only.
 
-  // Pattern for file:// URLs - treat as paths since loadWebMedia handles them
+  // Pattern for file:// URLs - treat as paths since loadMedia handles them
   const fileUrlPattern = /file:\/\/[^\s<>"'`\]]+\.(?:png|jpe?g|gif|webp|bmp|tiff?|heic|heif)/gi;
   while ((match = fileUrlPattern.exec(prompt)) !== null) {
     const raw = match[0];
@@ -185,6 +185,7 @@ export async function loadImageFromRef(
     maxBytes?: number;
     workspaceOnly?: boolean;
     sandbox?: { root: string; bridge: SandboxFsBridge };
+    localRoots?: string[];
   },
 ): Promise<ImageContent | null> {
   try {
@@ -228,22 +229,18 @@ export async function loadImageFromRef(
       }
     }
 
-    // loadWebMedia handles local file paths (including file:// URLs)
-    const media = options?.sandbox
-      ? await loadWebMedia(targetPath, {
-          maxBytes: options.maxBytes,
-          sandboxValidated: true,
-          readFile: (filePath) =>
-            options.sandbox!.bridge.readFile({ filePath, cwd: options.sandbox!.root }),
-        })
-      : await loadWebMedia(targetPath, options?.maxBytes);
+    // loadMedia handles local file paths (including file:// URLs)
+    const media = await loadMedia(targetPath, {
+      maxBytes: options?.maxBytes,
+      localRoots: options?.localRoots as string[] | undefined,
+    });
 
     if (media.kind !== "image") {
       log.debug(`Native image: not an image file: ${targetPath} (got ${media.kind})`);
       return null;
     }
 
-    // EXIF orientation is already normalized by loadWebMedia -> resizeToJpeg
+    // EXIF orientation is already normalized by loadMedia -> resizeToJpeg
     // Default to JPEG since optimization converts images to JPEG format
     const mimeType = media.contentType ?? "image/jpeg";
     const data = media.buffer.toString("base64");

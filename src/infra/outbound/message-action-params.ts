@@ -11,7 +11,7 @@ import type {
 import type { FlowHelmConfig } from "../../config/config.js";
 import { extensionForMime } from "../../media/mime.js";
 import { parseTelegramTarget } from "../../telegram/targets.js";
-import { loadWebMedia } from "../../web/media.js";
+import { loadMedia } from "../../media/loader.js";
 
 export function readBooleanParam(
   params: Record<string, unknown>,
@@ -167,10 +167,8 @@ async function hydrateAttachmentPayload(params: {
       accountId: params.accountId,
     });
     // mediaSource already validated by normalizeSandboxMediaList; allow bypass but force explicit readFile.
-    const media = await loadWebMedia(mediaSource, {
+    const media = await loadMedia(mediaSource, {
       maxBytes,
-      sandboxValidated: true,
-      readFile: (filePath: string) => fs.readFile(filePath),
     });
     params.args.buffer = media.buffer.toString("base64");
     if (!contentTypeParam && media.contentType) {

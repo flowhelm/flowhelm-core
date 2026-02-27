@@ -29,7 +29,7 @@ export type { NormalizedOutboundPayload } from "./payloads.js";
 export { normalizeOutboundPayloads } from "./payloads.js";
 
 export type OutboundSendDeps = {
-  sendTelegram?: any;
+  sendTelegram?: typeof import("../../telegram/send.js").sendMessageTelegram;
 };
 
 export type OutboundDeliveryResult = {

@@ -18,12 +18,7 @@ const withTempHome = withTempCronHome;
 
 function makeDeps(): CliDeps {
   return {
-    sendMessageSlack: vi.fn(),
-    sendMessageWhatsApp: vi.fn(),
     sendMessageTelegram: vi.fn(),
-    sendMessageDiscord: vi.fn(),
-    sendMessageSignal: vi.fn(),
-    sendMessageIMessage: vi.fn(),
   };
 }
 

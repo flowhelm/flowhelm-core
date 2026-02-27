@@ -80,15 +80,7 @@ import { probeTelegram } from "../../telegram/probe.js";
 import { sendMessageTelegram, sendPollTelegram } from "../../telegram/send.js";
 import { resolveTelegramToken } from "../../telegram/token.js";
 import { textToSpeechTelephony } from "../../tts/tts.js";
-import { getActiveWebListener } from "../../web/active-listener.js";
-import {
-  getWebAuthAgeMs,
-  logoutWeb,
-  logWebSelfId,
-  readWebSelfId,
-  webAuthExists,
-} from "../../web/auth-store.js";
-import { loadWebMedia } from "../../web/media.js";
+import { loadMedia } from "../../media/loader.js";
 import { formatNativeDependencyHint } from "./native-deps.js";
 import type { PluginRuntime } from "./types.js";
 
@@ -140,7 +132,7 @@ function createRuntimeSystem(): PluginRuntime["system"] {
 
 function createRuntimeMedia(): PluginRuntime["media"] {
   return {
-    loadWebMedia,
+    loadMedia,
     detectMime,
     mediaKindFromMime,
     isVoiceCompatibleAudio,

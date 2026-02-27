@@ -11,7 +11,7 @@ import { fetchRemoteMedia } from "../../media/fetch.js";
 import { isGifMedia } from "../../media/mime.js";
 import { saveMediaBuffer } from "../../media/store.js";
 import type { RuntimeEnv } from "../../runtime.js";
-import { loadWebMedia } from "../../web/media.js";
+import { loadMedia } from "../../media/loader.js";
 import { withTelegramApiErrorLogging } from "../api-logging.js";
 import type { TelegramInlineButtons } from "../button-types.js";
 import { splitTelegramCaption } from "../caption.js";
@@ -156,8 +156,8 @@ export async function deliverReplies(params: {
     let pendingFollowUpText: string | undefined;
     for (const mediaUrl of mediaList) {
       const isFirstMedia = first;
-      const media = await loadWebMedia(mediaUrl, {
-        localRoots: params.mediaLocalRoots,
+      const media = await loadMedia(mediaUrl, {
+        localRoots: params.mediaLocalRoots as string[] | undefined,
       });
       const kind = mediaKindFromMime(media.contentType ?? undefined);
       const isGif = isGifMedia({

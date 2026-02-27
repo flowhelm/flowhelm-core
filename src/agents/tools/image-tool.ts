@@ -2,7 +2,8 @@ import { type Api, type Context, complete, type Model } from "@mariozechner/pi-a
 import { Type } from "@sinclair/typebox";
 import type { FlowHelmConfig } from "../../config/config.js";
 import { resolveUserPath } from "../../utils.js";
-import { getDefaultLocalRoots, loadWebMedia } from "../../web/media.js";
+import { getDefaultMediaLocalRoots } from "../../media/local-roots.js";
+import { loadMedia } from "../../media/loader.js";
 import { ensureAuthProfileStore, listProfilesForProvider } from "../auth-profiles.js";
 import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../defaults.js";
 import { minimaxUnderstandImage } from "../minimax-vlm.js";
@@ -333,7 +334,7 @@ export function createImageTool(options?: {
     : "Analyze one or more images with the configured image model (agents.defaults.imageModel). Use image for a single path/URL, or images for multiple (up to 20). Provide a prompt describing what to analyze.";
 
   const localRoots = (() => {
-    const roots = getDefaultLocalRoots();
+    const roots = getDefaultMediaLocalRoots();
     const workspaceDir = normalizeWorkspaceDir(options?.workspaceDir);
     if (!workspaceDir) {
       return roots;
@@ -492,17 +493,10 @@ export function createImageTool(options?: {
 
         const media = isDataUrl
           ? decodeDataUrl(resolvedImage)
-          : sandboxConfig
-            ? await loadWebMedia(resolvedPath ?? resolvedImage, {
-                maxBytes,
-                sandboxValidated: true,
-                readFile: (filePath) =>
-                  sandboxConfig.bridge.readFile({ filePath, cwd: sandboxConfig.root }),
-              })
-            : await loadWebMedia(resolvedPath ?? resolvedImage, {
-                maxBytes,
-                localRoots,
-              });
+          : await loadMedia(resolvedPath ?? resolvedImage, {
+              maxBytes,
+              localRoots: localRoots as string[] | undefined,
+            });
         if (media.kind !== "image") {
           throw new Error(`Unsupported media type: ${media.kind}`);
         }

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { writeSkill } from "./skills.e2e-test-helpers.js";
 import { buildWorkspaceSkillsPrompt } from "./skills.js";
 
-describe("buildWorkspaceSkillsPrompt", () => {
+describe("await buildWorkspaceSkillsPrompt", () => {
   it("applies bundled allowlist without affecting workspace skills", async () => {
     const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "flowhelm-"));
     const bundledDir = path.join(workspaceDir, ".bundled");
@@ -25,7 +25,7 @@ describe("buildWorkspaceSkillsPrompt", () => {
       body: "# Workspace\n",
     });
 
-    const prompt = buildWorkspaceSkillsPrompt(workspaceDir, {
+    const prompt = await buildWorkspaceSkillsPrompt(workspaceDir, {
       bundledSkillsDir: bundledDir,
       managedSkillsDir: path.join(workspaceDir, ".managed"),
       config: { skills: { allowBundled: ["missing-skill"] } },

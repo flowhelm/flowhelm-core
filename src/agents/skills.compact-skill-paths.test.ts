@@ -25,7 +25,7 @@ describe("compactSkillPaths", () => {
         description: "A test skill for path compaction",
       });
 
-      const prompt = buildWorkspaceSkillsPrompt(workspaceDir, {
+      const prompt = await buildWorkspaceSkillsPrompt(workspaceDir, {
         bundledSkillsDir: path.join(workspaceDir, ".bundled-empty"),
         managedSkillsDir: path.join(workspaceDir, ".managed-empty"),
       });
@@ -55,7 +55,7 @@ describe("compactSkillPaths", () => {
         description: "External skill",
       });
 
-      const prompt = buildWorkspaceSkillsPrompt(workspaceDir, {
+      const prompt = await buildWorkspaceSkillsPrompt(workspaceDir, {
         bundledSkillsDir: path.join(workspaceDir, ".bundled-empty"),
         managedSkillsDir: path.join(workspaceDir, ".managed-empty"),
       });

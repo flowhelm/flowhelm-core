@@ -5,13 +5,13 @@ import { getSkillsSnapshotVersion } from "../../agents/skills/refresh.js";
 import type { FlowHelmConfig } from "../../config/config.js";
 import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
 
-export function resolveCronSkillsSnapshot(params: {
+export async function resolveCronSkillsSnapshot(params: {
   workspaceDir: string;
   config: FlowHelmConfig;
   agentId: string;
   existingSnapshot?: SkillSnapshot;
   isFastTestEnv: boolean;
-}): SkillSnapshot {
+}): Promise<SkillSnapshot> {
   if (params.isFastTestEnv) {
     // Fast unit-test mode skips filesystem scans and snapshot refresh writes.
     return params.existingSnapshot ?? { prompt: "", skills: [] };
@@ -28,7 +28,7 @@ export function resolveCronSkillsSnapshot(params: {
     return existingSnapshot;
   }
 
-  return buildWorkspaceSkillSnapshot(params.workspaceDir, {
+  return await buildWorkspaceSkillSnapshot(params.workspaceDir, {
     config: params.config,
     skillFilter,
     eligibility: { remote: getRemoteSkillEligibility() },

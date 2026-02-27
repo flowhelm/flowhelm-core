@@ -5,6 +5,8 @@ import { withEnv } from "../test-utils/env.js";
 import { createTrackedTempDirs } from "../test-utils/tracked-temp-dirs.js";
 import { writeSkill } from "./skills.e2e-test-helpers.js";
 import { buildWorkspaceSkillSnapshot, buildWorkspaceSkillsPrompt } from "./skills.js";
+import { getRemoteSkillEligibility } from "../infra/skills-remote.js";
+import { getSkillsSnapshotVersion } from "./skills/refresh.js";
 
 const tempDirs = createTrackedTempDirs();
 
@@ -12,16 +14,16 @@ afterEach(async () => {
   await tempDirs.cleanup();
 });
 
-function withWorkspaceHome<T>(workspaceDir: string, cb: () => T): T {
-  return withEnv({ HOME: workspaceDir, PATH: "" }, cb);
+async function withWorkspaceHome<T>(workspaceDir: string, cb: () => Promise<T>): Promise<T> {
+  return await withEnv({ HOME: workspaceDir, PATH: "" }, cb);
 }
 
 describe("buildWorkspaceSkillSnapshot", () => {
   it("returns an empty snapshot when skills dirs are missing", async () => {
     const workspaceDir = await tempDirs.make("flowhelm-");
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, {
         managedSkillsDir: path.join(workspaceDir, ".managed"),
         bundledSkillsDir: path.join(workspaceDir, ".bundled"),
       }),
@@ -45,8 +47,8 @@ describe("buildWorkspaceSkillSnapshot", () => {
       frontmatterExtra: "disable-model-invocation: true",
     });
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, {
         managedSkillsDir: path.join(workspaceDir, ".managed"),
         bundledSkillsDir: path.join(workspaceDir, ".bundled"),
       }),
@@ -95,11 +97,11 @@ describe("buildWorkspaceSkillSnapshot", () => {
       },
     };
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, opts),
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, opts),
     );
-    const prompt = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillsPrompt(workspaceDir, opts),
+    const prompt = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillsPrompt(workspaceDir, opts),
     );
 
     expect(snapshot.prompt).toBe(prompt);
@@ -118,8 +120,8 @@ describe("buildWorkspaceSkillSnapshot", () => {
       });
     }
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, {
         config: {
           skills: {
             limits: {
@@ -150,8 +152,8 @@ describe("buildWorkspaceSkillSnapshot", () => {
       });
     }
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, {
         config: {
           skills: {
             load: {
@@ -190,8 +192,8 @@ describe("buildWorkspaceSkillSnapshot", () => {
       body: "x".repeat(5_000),
     });
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, {
         config: {
           skills: {
             limits: {
@@ -227,8 +229,8 @@ describe("buildWorkspaceSkillSnapshot", () => {
       description: "Nested skill discovered late",
     });
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, {
         config: {
           skills: {
             load: {
@@ -260,8 +262,8 @@ describe("buildWorkspaceSkillSnapshot", () => {
       body: "x".repeat(5_000),
     });
 
-    const snapshot = withWorkspaceHome(workspaceDir, () =>
-      buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await withWorkspaceHome(workspaceDir, async () =>
+      await buildWorkspaceSkillSnapshot(workspaceDir, {
         config: {
           skills: {
             load: {

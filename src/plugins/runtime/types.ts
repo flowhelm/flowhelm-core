@@ -75,7 +75,7 @@ type GetChannelActivity = typeof import("../../infra/channel-activity.js").getCh
 type EnqueueSystemEvent = typeof import("../../infra/system-events.js").enqueueSystemEvent;
 type RunCommandWithTimeout = typeof import("../../process/exec.js").runCommandWithTimeout;
 type FormatNativeDependencyHint = typeof import("./native-deps.js").formatNativeDependencyHint;
-type LoadWebMedia = typeof import("../../web/media.js").loadWebMedia;
+type LoadMedia = typeof import("../../media/loader.js").loadMedia;
 type DetectMime = typeof import("../../media/mime.js").detectMime;
 type MediaKindFromMime = typeof import("../../media/constants.js").mediaKindFromMime;
 type IsVoiceCompatibleAudio = typeof import("../../media/audio.js").isVoiceCompatibleAudio;
@@ -116,7 +116,7 @@ export type PluginRuntime = {
     formatNativeDependencyHint: FormatNativeDependencyHint;
   };
   media: {
-    loadWebMedia: LoadWebMedia;
+    loadMedia: LoadMedia;
     detectMime: DetectMime;
     mediaKindFromMime: MediaKindFromMime;
     isVoiceCompatibleAudio: IsVoiceCompatibleAudio;

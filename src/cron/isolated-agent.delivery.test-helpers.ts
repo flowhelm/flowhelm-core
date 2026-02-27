@@ -6,12 +6,7 @@ import { makeCfg, makeJob } from "./isolated-agent.test-harness.js";
 
 export function createCliDeps(overrides: Partial<CliDeps> = {}): CliDeps {
   return {
-    sendMessageSlack: vi.fn(),
-    sendMessageWhatsApp: vi.fn(),
     sendMessageTelegram: vi.fn(),
-    sendMessageDiscord: vi.fn(),
-    sendMessageSignal: vi.fn(),
-    sendMessageIMessage: vi.fn(),
     ...overrides,
   };
 }

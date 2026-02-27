@@ -15,7 +15,7 @@ afterAll(async () => {
   await fixtureSuite.cleanup();
 });
 
-describe("buildWorkspaceSkillsPrompt", () => {
+describe("await buildWorkspaceSkillsPrompt", () => {
   it("prefers workspace skills over managed skills", async () => {
     const workspaceDir = await fixtureSuite.createCaseDir("workspace");
     const managedDir = path.join(workspaceDir, ".managed");
@@ -43,8 +43,8 @@ describe("buildWorkspaceSkillsPrompt", () => {
       body: "# Workspace\n",
     });
 
-    const prompt = withEnv({ HOME: workspaceDir, PATH: "" }, () =>
-      buildWorkspaceSkillsPrompt(workspaceDir, {
+    const prompt = await withEnv({ HOME: workspaceDir, PATH: "" }, async () =>
+      await buildWorkspaceSkillsPrompt(workspaceDir, {
         managedSkillsDir: managedDir,
         bundledSkillsDir: bundledDir,
       }),
@@ -91,8 +91,8 @@ describe("buildWorkspaceSkillsPrompt", () => {
     });
 
     const managedSkillsDir = path.join(workspaceDir, ".managed");
-    const defaultPrompt = withEnv({ HOME: workspaceDir, PATH: "" }, () =>
-      buildWorkspaceSkillsPrompt(workspaceDir, {
+    const defaultPrompt = await withEnv({ HOME: workspaceDir, PATH: "" }, async () =>
+      await buildWorkspaceSkillsPrompt(workspaceDir, {
         managedSkillsDir,
         eligibility: {
           remote: {
@@ -110,8 +110,8 @@ describe("buildWorkspaceSkillsPrompt", () => {
     expect(defaultPrompt).not.toContain("anybin-skill");
     expect(defaultPrompt).not.toContain("env-skill");
 
-    const gatedPrompt = withEnv({ HOME: workspaceDir, PATH: "" }, () =>
-      buildWorkspaceSkillsPrompt(workspaceDir, {
+    const gatedPrompt = await withEnv({ HOME: workspaceDir, PATH: "" }, async () =>
+      await buildWorkspaceSkillsPrompt(workspaceDir, {
         managedSkillsDir,
         config: {
           browser: { enabled: false },
@@ -143,8 +143,8 @@ describe("buildWorkspaceSkillsPrompt", () => {
       metadata: '{"flowhelm":{"skillKey":"alias"}}',
     });
 
-    const prompt = withEnv({ HOME: workspaceDir, PATH: "" }, () =>
-      buildWorkspaceSkillsPrompt(workspaceDir, {
+    const prompt = await withEnv({ HOME: workspaceDir, PATH: "" }, async () =>
+      await buildWorkspaceSkillsPrompt(workspaceDir, {
         managedSkillsDir: path.join(workspaceDir, ".managed"),
         config: { skills: { entries: { alias: { enabled: false } } } },
       }),

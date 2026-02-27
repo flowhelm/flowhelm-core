@@ -6,7 +6,7 @@ import type {
   ResolvedTelegramAccount,
 } from "flowhelm/plugin-sdk";
 import { describe, expect, it, vi } from "vitest";
-import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
+import { createRuntimeEnv } from "flowhelm/test-utils/runtime-env";
 import { telegramPlugin } from "./channel.js";
 import { setTelegramRuntime } from "./runtime.js";
 

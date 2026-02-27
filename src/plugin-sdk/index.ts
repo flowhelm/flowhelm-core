@@ -357,7 +357,7 @@ export {
 export { type TelegramProbe } from "../telegram/probe.js";
 
 // Media utilities
-export { loadWebMedia, type WebMediaResult } from "../web/media.js";
+export { loadMedia, type MediaResult } from "../media/loader.js";
 
 // Security utilities
 export { redactSensitiveText } from "../logging/redact.js";

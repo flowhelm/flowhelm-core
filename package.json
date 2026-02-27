@@ -44,6 +44,7 @@
       "types": "./dist/plugin-sdk/account-id.d.ts",
       "default": "./dist/plugin-sdk/account-id.js"
     },
+    "./test-utils/runtime-env": "./src/test-utils/runtime-env.ts",
     "./cli-entry": "./flowhelm.mjs"
   },
   "scripts": {

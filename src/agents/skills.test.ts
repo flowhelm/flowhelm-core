@@ -150,11 +150,11 @@ describe("buildWorkspaceSkillCommandSpecs", () => {
   });
 });
 
-describe("buildWorkspaceSkillsPrompt", () => {
+describe("await buildWorkspaceSkillsPrompt", () => {
   it("returns empty prompt when skills dirs are missing", async () => {
     const workspaceDir = await makeWorkspace();
 
-    const prompt = buildWorkspaceSkillsPrompt(workspaceDir, resolveTestSkillDirs(workspaceDir));
+    const prompt = await buildWorkspaceSkillsPrompt(workspaceDir, resolveTestSkillDirs(workspaceDir));
 
     expect(prompt).toBe("");
   });
@@ -171,7 +171,7 @@ describe("buildWorkspaceSkillsPrompt", () => {
       body: "# Peekaboo\n",
     });
 
-    const prompt = buildWorkspaceSkillsPrompt(workspaceDir, {
+    const prompt = await buildWorkspaceSkillsPrompt(workspaceDir, {
       managedSkillsDir: path.join(workspaceDir, ".managed"),
       bundledSkillsDir: bundledDir,
     });
@@ -211,7 +211,7 @@ describe("buildWorkspaceSkillsPrompt", () => {
       body: "# Workspace\n",
     });
 
-    const prompt = buildWorkspaceSkillsPrompt(workspaceDir, {
+    const prompt = await buildWorkspaceSkillsPrompt(workspaceDir, {
       bundledSkillsDir: bundledDir,
       managedSkillsDir: managedDir,
       config: { skills: { load: { extraDirs: [extraDir] } } },
@@ -234,7 +234,7 @@ describe("buildWorkspaceSkillsPrompt", () => {
       body: "# Demo Skill\n",
     });
 
-    const prompt = buildWorkspaceSkillsPrompt(workspaceDir, resolveTestSkillDirs(workspaceDir));
+    const prompt = await buildWorkspaceSkillsPrompt(workspaceDir, resolveTestSkillDirs(workspaceDir));
     expect(prompt).toContain("demo-skill");
     expect(prompt).toContain("Does demo things");
     expect(prompt).toContain(path.join(skillDir, "SKILL.md"));
@@ -279,7 +279,7 @@ describe("applySkillEnvOverrides", () => {
       metadata: '{"flowhelm":{"requires":{"env":["ENV_KEY"]},"primaryEnv":"ENV_KEY"}}',
     });
 
-    const snapshot = buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await buildWorkspaceSkillSnapshot(workspaceDir, {
       ...resolveTestSkillDirs(workspaceDir),
       config: { skills: { entries: { "env-skill": { apiKey: "snap-key" } } } },
     });
@@ -401,7 +401,7 @@ describe("applySkillEnvOverrides", () => {
         },
       },
     };
-    const snapshot = buildWorkspaceSkillSnapshot(workspaceDir, {
+    const snapshot = await buildWorkspaceSkillSnapshot(workspaceDir, {
       ...resolveTestSkillDirs(workspaceDir),
       config,
     });

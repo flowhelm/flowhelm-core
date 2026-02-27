@@ -36,8 +36,6 @@ describe("runCronIsolatedAgentTurn auth profile propagation (#20624)", () => {
       );
 
       // 2. Write auth-profiles.json in the agent directory
-      //    resolveAgentDir returns <stateDir>/agents/main/agent
-      //    stateDir = <home>/.flowhelm
       const agentDir = path.join(home, ".flowhelm", "agents", "main", "agent");
       await fs.mkdir(agentDir, { recursive: true });
       await fs.writeFile(
@@ -80,12 +78,7 @@ describe("runCronIsolatedAgentTurn auth profile propagation (#20624)", () => {
       const res = await runCronIsolatedAgentTurn({
         cfg,
         deps: {
-          sendMessageSlack: vi.fn(),
-          sendMessageWhatsApp: vi.fn(),
           sendMessageTelegram: vi.fn(),
-          sendMessageDiscord: vi.fn(),
-          sendMessageSignal: vi.fn(),
-          sendMessageIMessage: vi.fn(),
         },
         job: makeJob({ kind: "agentTurn", message: "check status", deliver: false }),
         message: "check status",
@@ -102,15 +95,6 @@ describe("runCronIsolatedAgentTurn auth profile propagation (#20624)", () => {
         authProfileIdSource?: string;
       };
 
-      console.log(`authProfileId passed to runEmbeddedPiAgent: ${callArgs?.authProfileId}`);
-      console.log(`authProfileIdSource passed: ${callArgs?.authProfileIdSource}`);
-
-      if (!callArgs?.authProfileId) {
-        console.log("❌ BUG CONFIRMED: isolated cron session does NOT pass authProfileId");
-        console.log("   This causes 401 errors when using providers that require auth profiles");
-      }
-
-      // This assertion will FAIL on main — proving the bug
       expect(callArgs?.authProfileId).toBe("openrouter:default");
     });
   });

@@ -22,15 +22,10 @@ async function createTelegramDeliveryFixture(home: string): Promise<{
     lastTo: "123",
   });
   const deps: CliDeps = {
-    sendMessageSlack: vi.fn(),
-    sendMessageWhatsApp: vi.fn(),
     sendMessageTelegram: vi.fn().mockResolvedValue({
       messageId: "t1",
       chatId: "123",
     }),
-    sendMessageDiscord: vi.fn(),
-    sendMessageSignal: vi.fn(),
-    sendMessageIMessage: vi.fn(),
   };
   return { storePath, deps };
 }
@@ -231,12 +226,7 @@ describe("runCronIsolatedAgentTurn", () => {
         lastTo: "123",
       });
       const deps: CliDeps = {
-        sendMessageSlack: vi.fn(),
-        sendMessageWhatsApp: vi.fn(),
         sendMessageTelegram: vi.fn(),
-        sendMessageDiscord: vi.fn(),
-        sendMessageSignal: vi.fn(),
-        sendMessageIMessage: vi.fn(),
       };
 
       vi.mocked(runEmbeddedPiAgent).mockResolvedValue({
