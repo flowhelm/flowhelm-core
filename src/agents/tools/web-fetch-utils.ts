@@ -206,12 +206,25 @@ function exceedsEstimatedHtmlNestingDepth(html: string, maxDepth: number): boole
   return false;
 }
 
+/**
+ * Aggressively removes non-content tags before processing to save tokens and
+ * improve Readability's success rate on complex pages.
+ */
+function prePruneHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, "")
+    .replace(/<(nav|footer|aside|form|header|iframe|canvas|svg|map|audio|video)[\s\S]*?<\/\1>/gi, "")
+    .replace(/<(link|meta|base|input|button)[^>]*>/gi, "");
+}
+
 export async function extractReadableContent(params: {
   html: string;
   url: string;
   extractMode: ExtractMode;
 }): Promise<{ text: string; title?: string } | null> {
-  const cleanHtml = await sanitizeHtml(params.html);
+  const cleanHtml = prePruneHtml(await sanitizeHtml(params.html));
   const fallback = (): { text: string; title?: string } => {
     const rendered = htmlToMarkdown(cleanHtml);
     if (params.extractMode === "text") {

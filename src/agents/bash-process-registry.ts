@@ -1,5 +1,6 @@
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { createSessionSlug as createSessionSlugId } from "./session-slug.js";
+import { sanitizeTerminalOutput } from "./bash-tools.output-sanitizer.js";
 
 const DEFAULT_JOB_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const MIN_JOB_TTL_MS = 60 * 1000; // 1 minute
@@ -102,6 +103,14 @@ export function deleteSession(id: string) {
 }
 
 export function appendOutput(session: ProcessSession, stream: "stdout" | "stderr", chunk: string) {
+  const sanitizedChunk = sanitizeTerminalOutput(chunk);
+  if (!sanitizedChunk && chunk) {
+    // If sanitization removed everything (e.g. just a progress bar), skip appending
+    // but update total count so we still know activity happened.
+    session.totalOutputChars += chunk.length;
+    return;
+  }
+
   session.pendingStdout ??= [];
   session.pendingStderr ??= [];
   session.pendingStdoutChars ??= sumPendingChars(session.pendingStdout);
@@ -112,8 +121,8 @@ export function appendOutput(session: ProcessSession, stream: "stdout" | "stderr
     session.pendingMaxOutputChars ?? DEFAULT_PENDING_OUTPUT_CHARS,
     session.maxOutputChars,
   );
-  buffer.push(chunk);
-  let pendingChars = bufferChars + chunk.length;
+  buffer.push(sanitizedChunk);
+  let pendingChars = bufferChars + sanitizedChunk.length;
   if (pendingChars > pendingCap) {
     session.truncated = true;
     pendingChars = capPendingBuffer(buffer, pendingChars, pendingCap);
@@ -124,9 +133,9 @@ export function appendOutput(session: ProcessSession, stream: "stdout" | "stderr
     session.pendingStderrChars = pendingChars;
   }
   session.totalOutputChars += chunk.length;
-  const aggregated = trimWithCap(session.aggregated + chunk, session.maxOutputChars);
+  const aggregated = trimWithCap(session.aggregated + sanitizedChunk, session.maxOutputChars);
   session.truncated =
-    session.truncated || aggregated.length < session.aggregated.length + chunk.length;
+    session.truncated || aggregated.length < session.aggregated.length + sanitizedChunk.length;
   session.aggregated = aggregated;
   session.tail = tail(session.aggregated, 2000);
 }
