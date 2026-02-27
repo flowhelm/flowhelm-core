@@ -222,7 +222,13 @@ export async function resolvePromptBuildHookResult(params: {
   };
 }
 
-export function resolvePromptModeForSession(sessionKey?: string): "minimal" | "full" {
+export function resolvePromptModeForSession(
+  sessionKey?: string,
+  isHeartbeat?: boolean,
+): "minimal" | "full" | "heartbeat" {
+  if (isHeartbeat) {
+    return "heartbeat";
+  }
   if (!sessionKey) {
     return "full";
   }
@@ -508,7 +514,7 @@ export async function runEmbeddedAttempt(
       },
     });
     const isDefaultAgent = sessionAgentId === defaultAgentId;
-    const promptMode = resolvePromptModeForSession(params.sessionKey);
+    const promptMode = resolvePromptModeForSession(params.sessionKey, params.isHeartbeat);
     const docsPath = await resolveFlowHelmDocsPath({
       workspaceDir: effectiveWorkspace,
       argv1: process.argv[1],

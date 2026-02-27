@@ -290,6 +290,7 @@ export async function runAgentTurnWithFallback(params: {
             groupSpace: params.sessionCtx.GroupSpace?.trim() ?? undefined,
             ...senderContext,
             ...runBaseParams,
+            isHeartbeat: params.isHeartbeat,
             prompt: params.commandBody,
             extraSystemPrompt: params.followupRun.run.extraSystemPrompt,
             toolResultFormat: (() => {

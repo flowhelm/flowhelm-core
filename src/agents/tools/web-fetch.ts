@@ -635,7 +635,7 @@ async function runWebFetch(params: WebFetchRuntimeParams): Promise<Record<string
       }
     } else if (contentType.includes("application/json")) {
       try {
-        text = JSON.stringify(JSON.parse(body), null, 2);
+        text = JSON.stringify(JSON.parse(body));
         extractor = "json";
       } catch {
         text = body;

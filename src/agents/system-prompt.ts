@@ -1,6 +1,6 @@
 import { createHmac, createHash } from "node:crypto";
 import type { ReasoningLevel, ThinkLevel } from "../auto-reply/thinking.js";
-import { SILENT_REPLY_TOKEN } from "../auto-reply/tokens.js";
+import { HEARTBEAT_TOKEN, SILENT_REPLY_TOKEN } from "../auto-reply/tokens.js";
 import type { MemoryCitationsMode } from "../config/types.memory.js";
 import { listDeliverableMessageChannels } from "../utils/message-channel.js";
 import type { ResolvedTimeFormat } from "./date-time.js";
@@ -12,9 +12,10 @@ import { sanitizeForPromptLiteral } from "./sanitize-for-prompt.js";
  * Controls which hardcoded sections are included in the system prompt.
  * - "full": All sections (default, for main agent)
  * - "minimal": Reduced sections (Tooling, Workspace, Runtime) - used for subagents
+ * - "heartbeat": Ultra-minimal sections for periodic checks
  * - "none": Just basic identity line, no sections
  */
-export type PromptMode = "full" | "minimal" | "none";
+export type PromptMode = "full" | "minimal" | "heartbeat" | "none";
 type OwnerIdDisplay = "raw" | "hash";
 
 function buildSkillsSection(params: { skillsPrompt?: string; readToolName: string }) {
@@ -365,7 +366,8 @@ export function buildAgentSystemPrompt(params: {
   const inlineButtonsEnabled = runtimeCapabilitiesLower.has("inlinebuttons");
   const messageChannelOptions = listDeliverableMessageChannels().join("|");
   const promptMode = params.promptMode ?? "full";
-  const isMinimal = promptMode === "minimal" || promptMode === "none";
+  const isMinimal = promptMode === "minimal" || promptMode === "heartbeat" || promptMode === "none";
+  const isHeartbeatMode = promptMode === "heartbeat";
   const sandboxContainerWorkspace = params.sandboxInfo?.containerWorkspaceDir?.trim();
   const sanitizedWorkspaceDir = sanitizeForPromptLiteral(params.workspaceDir);
   const sanitizedSandboxContainerWorkspace = sandboxContainerWorkspace
@@ -438,109 +440,37 @@ export function buildAgentSystemPrompt(params: {
     "If a task is more complex or takes longer, spawn a sub-agent. Completion is push-based: it will auto-announce when done.",
     "Do not poll `subagents list` / `sessions_list` in a loop; only check status on-demand (for intervention, debugging, or when explicitly asked).",
     "",
-    "## Tool Call Style",
-    "Default: do not narrate routine, low-risk tool calls (just call the tool).",
-    "Narrate only when it helps: multi-step work, complex/challenging problems, sensitive actions (e.g., deletions), or when the user explicitly asks.",
-    "Keep narration brief and value-dense; avoid repeating obvious steps.",
-    "Use plain human language for narration unless in a technical context.",
-    "",
-    ...safetySection,
-    "## FlowHelm CLI Quick Reference",
-    "FlowHelm is controlled via subcommands. Do not invent commands.",
-    "To manage the Gateway daemon service (start/stop/restart):",
-    "- flowhelm gateway status",
-    "- flowhelm gateway start",
-    "- flowhelm gateway stop",
-    "- flowhelm gateway restart",
-    "If unsure, ask the user to run `flowhelm help` (or `flowhelm gateway --help`) and paste the output.",
-    "",
-    ...skillsSection,
-    ...memorySection,
-    // Skip self-update for subagent/none modes
-    hasGateway && !isMinimal ? "## FlowHelm Self-Update" : "",
-    hasGateway && !isMinimal
-      ? [
-          "Get Updates (self-update) is ONLY allowed when the user explicitly asks for it.",
-          "Do not run config.apply or update.run unless the user explicitly requests an update or config change; if it's not explicit, ask first.",
-          "Actions: config.get, config.schema, config.apply (validate + write full config, then restart), update.run (update deps or git, then restart).",
-          "After restart, FlowHelm pings the last active session automatically.",
-        ].join("\n")
-      : "",
-    hasGateway && !isMinimal ? "" : "",
-    "",
-    // Skip model aliases for subagent/none modes
-    params.modelAliasLines && params.modelAliasLines.length > 0 && !isMinimal
-      ? "## Model Aliases"
-      : "",
-    params.modelAliasLines && params.modelAliasLines.length > 0 && !isMinimal
-      ? "Prefer aliases when specifying model overrides; full provider/model is also accepted."
-      : "",
-    params.modelAliasLines && params.modelAliasLines.length > 0 && !isMinimal
-      ? params.modelAliasLines.join("\n")
-      : "",
-    params.modelAliasLines && params.modelAliasLines.length > 0 && !isMinimal ? "" : "",
-    userTimezone
-      ? "If you need the current date, time, or day of week, run session_status (📊 session_status)."
-      : "",
-    "## Workspace",
-    `Your working directory is: ${displayWorkspaceDir}`,
-    workspaceGuidance,
-    ...workspaceNotes,
-    "",
+  ];
+
+  if (!isHeartbeatMode) {
+    lines.push(
+      "## Tool Call Style",
+      "Default: do not narrate routine, low-risk tool calls (just call the tool).",
+      "Narrate only when it helps: multi-step work, complex/challenging problems, sensitive actions (e.g., deletions), or when the user explicitly asks.",
+      "Keep narration brief and value-dense; avoid repeating obvious steps.",
+      "Use plain human language for narration unless in a technical context.",
+      "",
+    );
+  }
+
+  lines.push(...safetySection);
+
+  if (!isHeartbeatMode) {
+    lines.push(
+      "## FlowHelm CLI Quick Reference",
+      "FlowHelm is controlled via subcommands. Do not invent commands.",
+      "To manage the Gateway daemon service (start/stop/restart):",
+      "- flowhelm gateway status",
+      "- flowhelm gateway start",
+      "- flowhelm gateway stop",
+      "- flowhelm gateway restart",
+      "If unsure, ask the user to run `flowhelm help` (or `flowhelm gateway --help`) and paste the output.",
+      "",
+    );
+  }
+
+  lines.push(
     ...docsSection,
-    params.sandboxInfo?.enabled ? "## Sandbox" : "",
-    params.sandboxInfo?.enabled
-      ? [
-          "You are running in a sandboxed runtime (tools execute in Docker).",
-          "Some tools may be unavailable due to sandbox policy.",
-          "Sub-agents stay sandboxed (no elevated/host access). Need outside-sandbox read/write? Don't spawn; ask first.",
-          params.sandboxInfo.containerWorkspaceDir
-            ? `Sandbox container workdir: ${sanitizeForPromptLiteral(params.sandboxInfo.containerWorkspaceDir)}`
-            : "",
-          params.sandboxInfo.workspaceDir
-            ? `Sandbox host mount source (file tools bridge only; not valid inside sandbox exec): ${sanitizeForPromptLiteral(params.sandboxInfo.workspaceDir)}`
-            : "",
-          params.sandboxInfo.workspaceAccess
-            ? `Agent workspace access: ${params.sandboxInfo.workspaceAccess}${
-                params.sandboxInfo.agentWorkspaceMount
-                  ? ` (mounted at ${sanitizeForPromptLiteral(params.sandboxInfo.agentWorkspaceMount)})`
-                  : ""
-              }`
-            : "",
-          params.sandboxInfo.browserBridgeUrl ? "Sandbox browser: enabled." : "",
-          params.sandboxInfo.browserNoVncUrl
-            ? `Sandbox browser observer (noVNC): ${sanitizeForPromptLiteral(params.sandboxInfo.browserNoVncUrl)}`
-            : "",
-          params.sandboxInfo.hostBrowserAllowed === true
-            ? "Host browser control: allowed."
-            : params.sandboxInfo.hostBrowserAllowed === false
-              ? "Host browser control: blocked."
-              : "",
-          params.sandboxInfo.elevated?.allowed
-            ? "Elevated exec is available for this session."
-            : "",
-          params.sandboxInfo.elevated?.allowed
-            ? "User can toggle with /elevated on|off|ask|full."
-            : "",
-          params.sandboxInfo.elevated?.allowed
-            ? "You may also send /elevated on|off|ask|full when needed."
-            : "",
-          params.sandboxInfo.elevated?.allowed
-            ? `Current elevated level: ${params.sandboxInfo.elevated.defaultLevel} (ask runs exec on host with approvals; full auto-approves).`
-            : "",
-        ]
-          .filter(Boolean)
-          .join("\n")
-      : "",
-    params.sandboxInfo?.enabled ? "" : "",
-    ...buildUserIdentitySection(ownerLine, isMinimal),
-    ...buildTimeSection({
-      userTimezone,
-    }),
-    "## Workspace Files (injected)",
-    "These user-editable files are loaded by FlowHelm and included below in Project Context.",
-    "",
-    ...buildReplyTagsSection(isMinimal),
     ...buildMessagingSection({
       isMinimal,
       availableTools,
@@ -549,8 +479,139 @@ export function buildAgentSystemPrompt(params: {
       runtimeChannel,
       messageToolHints: params.messageToolHints,
     }),
+    ...buildReplyTagsSection(isMinimal),
     ...buildVoiceSection({ isMinimal, ttsHint: params.ttsHint }),
-  ];
+  );
+
+  // Skip silent replies for subagent/none modes
+  if (!isMinimal) {
+    lines.push(
+      "## Silent Replies",
+      `When you have nothing to say, respond with ONLY: ${SILENT_REPLY_TOKEN}`,
+      "",
+      "⚠️ Rules:",
+      "- It must be your ENTIRE message — nothing else",
+      `- Never append it to an actual response (never include "${SILENT_REPLY_TOKEN}" in real replies)`,
+      "- Never wrap it in markdown or code blocks",
+      "",
+      `❌ Wrong: "Here's help... ${SILENT_REPLY_TOKEN}"`,
+      `❌ Wrong: "${SILENT_REPLY_TOKEN}"`,
+      `✅ Right: ${SILENT_REPLY_TOKEN}`,
+      "",
+    );
+  }
+
+  // Include heartbeats for full OR heartbeat mode
+  if (promptMode === "full" || isHeartbeatMode) {
+    if (isHeartbeatMode) {
+      lines.push(
+        "## Heartbeats",
+        heartbeatPromptLine,
+        `If nothing needs attention, reply exactly: ${HEARTBEAT_TOKEN}`,
+        "",
+      );
+    } else {
+      lines.push(
+        "## Heartbeats",
+        heartbeatPromptLine,
+        "If you receive a heartbeat poll (a user message matching the heartbeat prompt above), and there is nothing that needs attention, reply exactly:",
+        "HEARTBEAT_OK",
+        'FlowHelm treats a leading/trailing "HEARTBEAT_OK" as a heartbeat ack (and may discard it).',
+        'If something needs attention, do NOT include "HEARTBEAT_OK"; reply with the alert text instead.',
+        "",
+      );
+    }
+  }
+
+  if (reasoningHint) {
+    lines.push("## Reasoning Format", reasoningHint, "");
+  }
+
+  lines.push(...skillsSection);
+  lines.push(...memorySection);
+
+  // Skip self-update for subagent/none modes
+  if (hasGateway && !isMinimal) {
+    lines.push(
+      "## FlowHelm Self-Update",
+      "Get Updates (self-update) is ONLY allowed when the user explicitly asks for it.",
+      "Do not run config.apply or update.run unless the user explicitly requests an update or config change; if it's not explicit, ask first.",
+      "Actions: config.get, config.schema, config.apply (validate + write full config, then restart), update.run (update deps or git, then restart).",
+      "After restart, FlowHelm pings the last active session automatically.",
+      "",
+    );
+  }
+
+  // Skip model aliases for subagent/none modes
+  if (params.modelAliasLines && params.modelAliasLines.length > 0 && !isMinimal) {
+    lines.push(
+      "## Model Aliases",
+      "Prefer aliases when specifying model overrides; full provider/model is also accepted.",
+      ...params.modelAliasLines,
+      "",
+    );
+  }
+
+  if (userTimezone) {
+    lines.push(
+      "If you need the current date, time, or day of week, run session_status (📊 session_status).",
+    );
+  }
+
+  lines.push(
+    "## Workspace",
+    `Your working directory is: ${displayWorkspaceDir}`,
+    workspaceGuidance,
+    ...workspaceNotes,
+    "",
+  );
+
+  if (params.sandboxInfo?.enabled) {
+    lines.push(
+      "## Sandbox",
+      "You are running in a sandboxed runtime (tools execute in Docker).",
+      "Some tools may be unavailable due to sandbox policy.",
+      "Sub-agents stay sandboxed (no elevated/host access). Need outside-sandbox read/write? Don't spawn; ask first.",
+      params.sandboxInfo.containerWorkspaceDir
+        ? `Sandbox container workdir: ${sanitizeForPromptLiteral(params.sandboxInfo.containerWorkspaceDir)}`
+        : "",
+      params.sandboxInfo.workspaceDir
+        ? `Sandbox host mount source (file tools bridge only; not valid inside sandbox exec): ${sanitizeForPromptLiteral(params.sandboxInfo.workspaceDir)}`
+        : "",
+      params.sandboxInfo.workspaceAccess
+        ? `Agent workspace access: ${params.sandboxInfo.workspaceAccess}${
+            params.sandboxInfo.agentWorkspaceMount
+              ? ` (mounted at ${sanitizeForPromptLiteral(params.sandboxInfo.agentWorkspaceMount)})`
+              : ""
+          }`
+        : "",
+      params.sandboxInfo.browserBridgeUrl ? "Sandbox browser: enabled." : "",
+      params.sandboxInfo.browserNoVncUrl
+        ? `Sandbox browser observer (noVNC): ${sanitizeForPromptLiteral(params.sandboxInfo.browserNoVncUrl)}`
+        : "",
+      params.sandboxInfo.hostBrowserAllowed === true
+        ? "Host browser control: allowed."
+        : params.sandboxInfo.hostBrowserAllowed === false
+          ? "Host browser control: blocked."
+          : "",
+      params.sandboxInfo.elevated?.allowed
+        ? "Elevated exec is available for this session."
+        : "",
+      params.sandboxInfo.elevated?.allowed
+        ? "User can toggle with /elevated on|off|ask|full."
+        : "",
+      params.sandboxInfo.elevated?.allowed
+        ? "You may also send /elevated on|off|ask|full when needed."
+        : "",
+      params.sandboxInfo.elevated?.allowed
+        ? `Current elevated level: ${params.sandboxInfo.elevated.defaultLevel} (ask runs exec on host with approvals; full auto-approves).`
+        : "",
+      "",
+    );
+  }
+
+  lines.push(...buildUserIdentitySection(ownerLine, isMinimal));
+  lines.push(...buildTimeSection({ userTimezone }));
 
   if (extraSystemPrompt) {
     // Use "Subagent Context" header for minimal mode (subagents), otherwise "Group Chat Context"
@@ -558,6 +619,7 @@ export function buildAgentSystemPrompt(params: {
       promptMode === "minimal" ? "## Subagent Context" : "## Group Chat Context";
     lines.push(contextHeader, extraSystemPrompt, "");
   }
+
   if (params.reactionGuidance) {
     const { level, channel } = params.reactionGuidance;
     const guidanceText =
@@ -581,9 +643,6 @@ export function buildAgentSystemPrompt(params: {
           ].join("\n");
     lines.push("## Reactions", guidanceText, "");
   }
-  if (reasoningHint) {
-    lines.push("## Reasoning Format", reasoningHint, "");
-  }
 
   const contextFiles = params.contextFiles ?? [];
   const validContextFiles = contextFiles.filter(
@@ -595,7 +654,14 @@ export function buildAgentSystemPrompt(params: {
       const baseName = normalizedPath.split("/").pop() ?? normalizedPath;
       return baseName.toLowerCase() === "soul.md";
     });
-    lines.push("# Project Context", "", "The following project context files have been loaded:");
+    lines.push(
+      "## Workspace Files (injected)",
+      "These user-editable files are loaded by FlowHelm and included below in Project Context.",
+      "",
+      "# Project Context",
+      "",
+      "The following project context files have been loaded:",
+    );
     if (hasSoulFile) {
       lines.push(
         "If SOUL.md is present, embody its persona and tone. Avoid stiff, generic replies; follow its guidance unless higher-priority instructions override it.",
@@ -605,37 +671,6 @@ export function buildAgentSystemPrompt(params: {
     for (const file of validContextFiles) {
       lines.push(`## ${file.path}`, "", file.content, "");
     }
-  }
-
-  // Skip silent replies for subagent/none modes
-  if (!isMinimal) {
-    lines.push(
-      "## Silent Replies",
-      `When you have nothing to say, respond with ONLY: ${SILENT_REPLY_TOKEN}`,
-      "",
-      "⚠️ Rules:",
-      "- It must be your ENTIRE message — nothing else",
-      `- Never append it to an actual response (never include "${SILENT_REPLY_TOKEN}" in real replies)`,
-      "- Never wrap it in markdown or code blocks",
-      "",
-      `❌ Wrong: "Here's help... ${SILENT_REPLY_TOKEN}"`,
-      `❌ Wrong: "${SILENT_REPLY_TOKEN}"`,
-      `✅ Right: ${SILENT_REPLY_TOKEN}`,
-      "",
-    );
-  }
-
-  // Skip heartbeats for subagent/none modes
-  if (!isMinimal) {
-    lines.push(
-      "## Heartbeats",
-      heartbeatPromptLine,
-      "If you receive a heartbeat poll (a user message matching the heartbeat prompt above), and there is nothing that needs attention, reply exactly:",
-      "HEARTBEAT_OK",
-      'FlowHelm treats a leading/trailing "HEARTBEAT_OK" as a heartbeat ack (and may discard it).',
-      'If something needs attention, do NOT include "HEARTBEAT_OK"; reply with the alert text instead.',
-      "",
-    );
   }
 
   lines.push(

@@ -132,6 +132,30 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain("Subagent details");
   });
 
+  it("omits most sections in heartbeat prompt mode", () => {
+    const prompt = buildAgentSystemPrompt({
+      workspaceDir: "/tmp/flowhelm",
+      promptMode: "heartbeat",
+      ownerNumbers: ["+123"],
+      heartbeatPrompt: "ping",
+      toolNames: ["message", "read"],
+      modelAliasLines: ["- Opus: anthropic/claude-opus-4-5"],
+    });
+
+    expect(prompt).not.toContain("## Authorized Senders");
+    expect(prompt).not.toContain("## Tool Call Style");
+    expect(prompt).not.toContain("## FlowHelm CLI Quick Reference");
+    expect(prompt).not.toContain("## Messaging");
+    expect(prompt).not.toContain("## Model Aliases");
+    expect(prompt).not.toContain("## Silent Replies");
+    expect(prompt).toContain("## Heartbeats");
+    expect(prompt).toContain("Heartbeat prompt: ping");
+    expect(prompt).toContain("If nothing needs attention, reply exactly: HEARTBEAT_OK");
+    expect(prompt).toContain("## Tooling");
+    expect(prompt).toContain("## Workspace");
+    expect(prompt).toContain("## Runtime");
+  });
+
   it("includes skills in minimal prompt mode when skillsPrompt is provided (cron regression)", () => {
     // Isolated cron sessions use promptMode="minimal" but must still receive skills.
     const skillsPrompt =

@@ -103,4 +103,6 @@ export type RunEmbeddedPiAgentParams = {
   streamParams?: AgentStreamParams;
   ownerNumbers?: string[];
   enforceFinalTag?: boolean;
+  /** If true, this run is a periodic heartbeat check. */
+  isHeartbeat?: boolean;
 };
