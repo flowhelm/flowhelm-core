@@ -33,9 +33,7 @@ import {
   normalizeSandboxMediaParams,
   parseButtonsParam,
   parseCardParam,
-  parseComponentsParam,
   readBooleanParam,
-  resolveSlackAutoThreadId,
   resolveTelegramAutoThreadId,
 } from "./message-action-params.js";
 import { actionHasTarget, actionRequiresTarget } from "./message-action-spec.js";
@@ -67,19 +65,14 @@ function resolveAndApplyOutboundThreadId(
     channel: ChannelId;
     to: string;
     toolContext?: ChannelThreadingToolContext;
-    allowSlackAutoThread: boolean;
   },
 ): string | undefined {
   const threadId = readStringParam(params, "threadId");
-  const slackAutoThreadId =
-    ctx.allowSlackAutoThread && ctx.channel === "slack" && !threadId
-      ? resolveSlackAutoThreadId({ to: ctx.to, toolContext: ctx.toolContext })
-      : undefined;
   const telegramAutoThreadId =
     ctx.channel === "telegram" && !threadId
       ? resolveTelegramAutoThreadId({ to: ctx.to, toolContext: ctx.toolContext })
       : undefined;
-  const resolved = threadId ?? slackAutoThreadId ?? telegramAutoThreadId;
+  const resolved = threadId ?? telegramAutoThreadId;
   // Write auto-resolved threadId back into params so downstream dispatch
   // (plugin `readStringParam(params, "threadId")`) picks it up.
   if (resolved && !params.threadId) {
@@ -397,11 +390,10 @@ async function handleSendAction(ctx: ResolvedActionContext): Promise<MessageActi
     readStringParam(params, "path", { trim: false }) ??
     readStringParam(params, "filePath", { trim: false });
   const hasCard = params.card != null && typeof params.card === "object";
-  const hasComponents = params.components != null && typeof params.components === "object";
   const caption = readStringParam(params, "caption", { allowEmpty: true }) ?? "";
   let message =
     readStringParam(params, "message", {
-      required: !mediaHint && !hasCard && !hasComponents,
+      required: !mediaHint && !hasCard,
       allowEmpty: true,
     }) ?? "";
   if (message.includes("\\n")) {
@@ -457,17 +449,11 @@ async function handleSendAction(ctx: ResolvedActionContext): Promise<MessageActi
     accountId,
     args: params,
     message,
-    preferComponents: true,
+    preferComponents: false,
   });
 
   const mediaUrl = readStringParam(params, "media", { trim: false });
-  if (channel === "whatsapp") {
-    message = message.replace(/^(?:[ \t]*\r?\n)+/, "");
-    if (!message.trim()) {
-      message = "";
-    }
-  }
-  if (!message.trim() && !mediaUrl && mergedMediaUrls.length === 0 && !hasCard && !hasComponents) {
+  if (!message.trim() && !mediaUrl && mergedMediaUrls.length === 0 && !hasCard) {
     throw new Error("send requires text or media");
   }
   params.message = message;
@@ -480,7 +466,6 @@ async function handleSendAction(ctx: ResolvedActionContext): Promise<MessageActi
     channel,
     to,
     toolContext: input.toolContext,
-    allowSlackAutoThread: channel === "slack" && !replyToId,
   });
   const outboundRoute =
     agentId && !dryRun
@@ -598,7 +583,6 @@ async function handlePollAction(ctx: ResolvedActionContext): Promise<MessageActi
     channel,
     to,
     toolContext: input.toolContext,
-    allowSlackAutoThread: channel === "slack",
   });
 
   const base = typeof params.message === "string" ? params.message : "";
@@ -700,7 +684,6 @@ export async function runMessageAction(
       : undefined);
   parseButtonsParam(params);
   parseCardParam(params);
-  parseComponentsParam(params);
 
   const action = input.action;
   if (action === "broadcast") {

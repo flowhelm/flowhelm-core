@@ -11,7 +11,6 @@ import type {
   loadSessionStore as loadSessionStoreFn,
   resolveStorePath as resolveStorePathFn,
 } from "../../../config/sessions.js";
-import { parseDiscordTarget } from "../../../discord/targets.js";
 import { callGateway } from "../../../gateway/call.js";
 import { formatTimeAgo } from "../../../infra/format-time/format-relative.ts";
 import { parseAgentSessionKey } from "../../../routing/session-key.js";
@@ -266,45 +265,6 @@ export type FocusTargetResolution = {
   agentId: string;
   label?: string;
 };
-
-export function isDiscordSurface(params: SubagentsCommandParams): boolean {
-  const channel =
-    params.ctx.OriginatingChannel ??
-    params.command.channel ??
-    params.ctx.Surface ??
-    params.ctx.Provider;
-  return (
-    String(channel ?? "")
-      .trim()
-      .toLowerCase() === "discord"
-  );
-}
-
-export function resolveDiscordAccountId(params: SubagentsCommandParams): string {
-  const accountId = typeof params.ctx.AccountId === "string" ? params.ctx.AccountId.trim() : "";
-  return accountId || "default";
-}
-
-export function resolveDiscordChannelIdForFocus(
-  params: SubagentsCommandParams,
-): string | undefined {
-  const toCandidates = [
-    typeof params.ctx.OriginatingTo === "string" ? params.ctx.OriginatingTo.trim() : "",
-    typeof params.command.to === "string" ? params.command.to.trim() : "",
-    typeof params.ctx.To === "string" ? params.ctx.To.trim() : "",
-  ].filter(Boolean);
-  for (const candidate of toCandidates) {
-    try {
-      const target = parseDiscordTarget(candidate, { defaultKind: "channel" });
-      if (target?.kind === "channel" && target.id) {
-        return target.id;
-      }
-    } catch {
-      // Ignore parse failures and try the next candidate.
-    }
-  }
-  return undefined;
-}
 
 export async function resolveFocusTargetSession(params: {
   runs: SubagentRunRecord[];

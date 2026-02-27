@@ -55,6 +55,20 @@ import {
 import { shouldLogVerbose } from "../../globals.js";
 import { getChannelActivity, recordChannelActivity } from "../../infra/channel-activity.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";
+import { getChildLogger } from "../../logging.js";
+import { normalizeLogLevel } from "../../logging/levels.js";
+import { convertMarkdownTables } from "../../markdown/tables.js";
+import { isVoiceCompatibleAudio } from "../../media/audio.js";
+import { mediaKindFromMime } from "../../media/constants.js";
+import { fetchRemoteMedia } from "../../media/fetch.js";
+import { getImageMetadata, resizeToJpeg } from "../../media/image-ops.js";
+import { detectMime } from "../../media/mime.js";
+import { saveMediaBuffer } from "../../media/store.js";
+import { buildPairingReply } from "../../pairing/pairing-messages.js";
+import {
+  readChannelAllowFromStore,
+  upsertChannelPairingRequest,
+} from "../../pairing/pairing-store.js";
 import { runCommandWithTimeout } from "../../process/exec.js";
 import { resolveAgentRoute } from "../../routing/resolve-route.js";
 import {
@@ -93,6 +107,20 @@ function resolveVersion(): string {
     cachedVersion = "unknown";
     return cachedVersion;
   }
+}
+
+export function createPluginRuntime(): PluginRuntime {
+  return {
+    version: resolveVersion(),
+    config: createRuntimeConfig(),
+    system: createRuntimeSystem(),
+    media: createRuntimeMedia(),
+    tts: { textToSpeechTelephony },
+    tools: createRuntimeTools(),
+    channel: createRuntimeChannel(),
+    logging: createRuntimeLogging(),
+    state: { resolveStateDir },
+  };
 }
 
 function createRuntimeConfig(): PluginRuntime["config"] {
