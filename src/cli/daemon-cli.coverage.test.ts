@@ -97,15 +97,15 @@ describe("daemon-cli coverage", () => {
 
   beforeEach(() => {
     envSnapshot = captureEnv([
-      "OPENCLAW_STATE_DIR",
-      "OPENCLAW_CONFIG_PATH",
-      "OPENCLAW_GATEWAY_PORT",
-      "OPENCLAW_PROFILE",
+      "FLOWHELM_STATE_DIR",
+      "FLOWHELM_CONFIG_PATH",
+      "FLOWHELM_GATEWAY_PORT",
+      "FLOWHELM_PROFILE",
     ]);
-    process.env.OPENCLAW_STATE_DIR = "/tmp/openclaw-cli-state";
-    process.env.OPENCLAW_CONFIG_PATH = "/tmp/openclaw-cli-state/openclaw.json";
-    delete process.env.OPENCLAW_GATEWAY_PORT;
-    delete process.env.OPENCLAW_PROFILE;
+    process.env.FLOWHELM_STATE_DIR = "/tmp/flowhelm-cli-state";
+    process.env.FLOWHELM_CONFIG_PATH = "/tmp/flowhelm-cli-state/flowhelm.json";
+    delete process.env.FLOWHELM_GATEWAY_PORT;
+    delete process.env.FLOWHELM_PROFILE;
     serviceReadCommand.mockResolvedValue(null);
   });
 
@@ -133,10 +133,10 @@ describe("daemon-cli coverage", () => {
     serviceReadCommand.mockResolvedValueOnce({
       programArguments: ["/bin/node", "cli", "gateway", "--port", "19001"],
       environment: {
-        OPENCLAW_PROFILE: "dev",
-        OPENCLAW_STATE_DIR: "/tmp/openclaw-daemon-state",
-        OPENCLAW_CONFIG_PATH: "/tmp/openclaw-daemon-state/openclaw.json",
-        OPENCLAW_GATEWAY_PORT: "19001",
+        FLOWHELM_PROFILE: "dev",
+        FLOWHELM_STATE_DIR: "/tmp/flowhelm-daemon-state",
+        FLOWHELM_CONFIG_PATH: "/tmp/flowhelm-daemon-state/flowhelm.json",
+        FLOWHELM_GATEWAY_PORT: "19001",
       },
       sourcePath: "/tmp/bot.molt.gateway.plist",
     });

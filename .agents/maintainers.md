@@ -1,1 +1,1 @@
-Maintainer skills now live in [`openclaw/maintainers`](https://github.com/openclaw/maintainers/).
+Maintainer skills now live in [`flowhelm/maintainers`](https://github.com/flowhelm/maintainers/).

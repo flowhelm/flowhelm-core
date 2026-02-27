@@ -44,15 +44,15 @@ describe("findExtraGatewayServices (win32)", () => {
     expect(result).toEqual([]);
   });
 
-  it("collects only non-openclaw marker tasks from schtasks output", async () => {
+  it("collects only non-flowhelm marker tasks from schtasks output", async () => {
     execSchtasksMock.mockResolvedValueOnce({
       code: 0,
       stdout: [
-        "TaskName: OpenClaw Gateway",
-        "Task To Run: C:\\Program Files\\OpenClaw\\openclaw.exe gateway run",
+        "TaskName: FlowHelm Gateway",
+        "Task To Run: C:\\Program Files\\FlowHelm\\flowhelm.exe gateway run",
         "",
         "TaskName: Clawdbot Legacy",
-        "Task To Run: C:\\clawdbot\\clawdbot.exe run",
+        "Task To Run: C:\\flowhelm_bot\\flowhelm_bot.exe run",
         "",
         "TaskName: Other Task",
         "Task To Run: C:\\tools\\helper.exe",
@@ -69,9 +69,9 @@ describe("findExtraGatewayServices (win32)", () => {
       {
         platform: "win32",
         label: "Clawdbot Legacy",
-        detail: "task: Clawdbot Legacy, run: C:\\clawdbot\\clawdbot.exe run",
+        detail: "task: Clawdbot Legacy, run: C:\\flowhelm_bot\\flowhelm_bot.exe run",
         scope: "system",
-        marker: "clawdbot",
+        marker: "flowhelm_bot",
         legacy: true,
       },
       {

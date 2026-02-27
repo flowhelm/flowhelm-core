@@ -21,12 +21,9 @@ import { handleModelsCommand } from "./commands-models.js";
 import { handlePluginCommand } from "./commands-plugin.js";
 import {
   handleAbortTrigger,
-  handleActivationCommand,
   handleRestartCommand,
   handleSessionCommand,
-  handleSendPolicyCommand,
   handleStopCommand,
-  handleUsageCommand,
 } from "./commands-session.js";
 import { handleSubagentsCommand } from "./commands-subagents.js";
 import { handleTtsCommands } from "./commands-tts.js";
@@ -135,9 +132,6 @@ export async function handleCommands(params: HandleCommandsParams): Promise<Comm
       // Plugin commands are processed first, before built-in commands
       handlePluginCommand,
       handleBashCommand,
-      handleActivationCommand,
-      handleSendPolicyCommand,
-      handleUsageCommand,
       handleSessionCommand,
       handleRestartCommand,
       handleTtsCommands,

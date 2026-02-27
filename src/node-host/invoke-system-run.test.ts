@@ -165,7 +165,7 @@ describe("handleSystemRunInvoke mac app exec host routing", () => {
     );
   });
   it("denies ./sh wrapper spoof in allowlist on-miss mode before execution", async () => {
-    const marker = path.join(os.tmpdir(), `openclaw-wrapper-spoof-${process.pid}-${Date.now()}`);
+    const marker = path.join(os.tmpdir(), `flowhelm-wrapper-spoof-${process.pid}-${Date.now()}`);
     const runCommand = vi.fn(async () => {
       fs.writeFileSync(marker, "executed");
       return {
@@ -228,12 +228,12 @@ describe("handleSystemRunInvoke mac app exec host routing", () => {
   });
 
   it("denies ./skill-bin even when autoAllowSkills trust entry exists", async () => {
-    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-skill-path-spoof-"));
-    const previousOpenClawHome = process.env.OPENCLAW_HOME;
+    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "flowhelm-skill-path-spoof-"));
+    const previousFlowHelmHome = process.env.FLOWHELM_HOME;
     const skillBinPath = path.join(tempHome, "skill-bin");
     fs.writeFileSync(skillBinPath, "#!/bin/sh\necho should-not-run\n", { mode: 0o755 });
     fs.chmodSync(skillBinPath, 0o755);
-    process.env.OPENCLAW_HOME = tempHome;
+    process.env.FLOWHELM_HOME = tempHome;
     saveExecApprovals({
       version: 1,
       defaults: {
@@ -282,10 +282,10 @@ describe("handleSystemRunInvoke mac app exec host routing", () => {
         preferMacAppExecHost: false,
       });
     } finally {
-      if (previousOpenClawHome === undefined) {
-        delete process.env.OPENCLAW_HOME;
+      if (previousFlowHelmHome === undefined) {
+        delete process.env.FLOWHELM_HOME;
       } else {
-        process.env.OPENCLAW_HOME = previousOpenClawHome;
+        process.env.FLOWHELM_HOME = previousFlowHelmHome;
       }
       fs.rmSync(tempHome, { recursive: true, force: true });
     }

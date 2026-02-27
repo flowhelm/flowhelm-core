@@ -1,7 +1,7 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { FlowHelmConfig } from "../config/config.js";
 
 export function resolveChannelAccountConfigBasePath(params: {
-  cfg: OpenClawConfig;
+  cfg: FlowHelmConfig;
   channelKey: string;
   accountId: string;
 }): string {

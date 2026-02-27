@@ -75,7 +75,7 @@ jobs:
             esac
 
             case "$path" in
-              src/*|test/*|extensions/*|packages/*|scripts/*|ui/*|.github/*|openclaw.mjs|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|tsconfig*.json|vitest*.ts|tsdown.config.ts|.oxlintrc.json|.oxfmtrc.jsonc)
+              src/*|test/*|extensions/*|packages/*|scripts/*|ui/*|.github/*|flowhelm.mjs|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|tsconfig*.json|vitest*.ts|tsdown.config.ts|.oxlintrc.json|.oxfmtrc.jsonc)
                 run_node=true
                 ;;
             esac
@@ -176,15 +176,15 @@ jobs:
 
       - name: Configure vitest JSON reports
         if: (github.event_name != 'push' || matrix.runtime != 'bun') && matrix.task == 'test' && matrix.runtime == 'node'
-        run: echo "OPENCLAW_VITEST_REPORT_DIR=$RUNNER_TEMP/vitest-reports" >> "$GITHUB_ENV"
+        run: echo "FLOWHELM_VITEST_REPORT_DIR=$RUNNER_TEMP/vitest-reports" >> "$GITHUB_ENV"
 
       - name: Configure Node test resources
         if: (github.event_name != 'push' || matrix.runtime != 'bun') && matrix.task == 'test' && matrix.runtime == 'node'
         run: |
           # `pnpm test` runs `scripts/test-parallel.mjs`, which spawns multiple Node processes.
           # Default heap limits have been too low on Linux CI (V8 OOM near 4GB).
-          echo "OPENCLAW_TEST_WORKERS=2" >> "$GITHUB_ENV"
-          echo "OPENCLAW_TEST_MAX_OLD_SPACE_SIZE_MB=6144" >> "$GITHUB_ENV"
+          echo "FLOWHELM_TEST_WORKERS=2" >> "$GITHUB_ENV"
+          echo "FLOWHELM_TEST_MAX_OLD_SPACE_SIZE_MB=6144" >> "$GITHUB_ENV"
 
       - name: Run ${{ matrix.task }} (${{ matrix.runtime }})
         if: matrix.runtime != 'bun' || github.event_name != 'push'
@@ -193,7 +193,7 @@ jobs:
       - name: Summarize slowest tests
         if: (github.event_name != 'push' || matrix.runtime != 'bun') && matrix.task == 'test' && matrix.runtime == 'node'
         run: |
-          node scripts/vitest-slowest.mjs --dir "$OPENCLAW_VITEST_REPORT_DIR" --top 50 --out "$RUNNER_TEMP/vitest-slowest.md" > /dev/null
+          node scripts/vitest-slowest.mjs --dir "$FLOWHELM_VITEST_REPORT_DIR" --top 50 --out "$RUNNER_TEMP/vitest-slowest.md" > /dev/null
           echo "Slowest test summary written to $RUNNER_TEMP/vitest-slowest.md"
 
       - name: Upload vitest reports
@@ -202,7 +202,7 @@ jobs:
         with:
           name: vitest-reports-${{ runner.os }}-${{ matrix.runtime }}
           path: |
-            ${{ env.OPENCLAW_VITEST_REPORT_DIR }}
+            ${{ env.FLOWHELM_VITEST_REPORT_DIR }}
             ${{ runner.temp }}/vitest-slowest.md
 
   # Types, lint, and format check.
@@ -371,7 +371,7 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=4096
       # Keep total concurrency predictable on the 16 vCPU runner:
       # `scripts/test-parallel.mjs` runs some vitest suites in parallel processes.
-      OPENCLAW_TEST_WORKERS: 2
+      FLOWHELM_TEST_WORKERS: 2
     defaults:
       run:
         shell: bash
@@ -460,7 +460,7 @@ jobs:
 
       - name: Configure vitest JSON reports
         if: matrix.task == 'test'
-        run: echo "OPENCLAW_VITEST_REPORT_DIR=$RUNNER_TEMP/vitest-reports" >> "$GITHUB_ENV"
+        run: echo "FLOWHELM_VITEST_REPORT_DIR=$RUNNER_TEMP/vitest-reports" >> "$GITHUB_ENV"
 
       - name: Run ${{ matrix.task }} (${{ matrix.runtime }})
         run: ${{ matrix.command }}
@@ -468,7 +468,7 @@ jobs:
       - name: Summarize slowest tests
         if: matrix.task == 'test'
         run: |
-          node scripts/vitest-slowest.mjs --dir "$OPENCLAW_VITEST_REPORT_DIR" --top 50 --out "$RUNNER_TEMP/vitest-slowest.md" > /dev/null
+          node scripts/vitest-slowest.mjs --dir "$FLOWHELM_VITEST_REPORT_DIR" --top 50 --out "$RUNNER_TEMP/vitest-slowest.md" > /dev/null
           echo "Slowest test summary written to $RUNNER_TEMP/vitest-slowest.md"
 
       - name: Upload vitest reports
@@ -477,6 +477,5 @@ jobs:
         with:
           name: vitest-reports-${{ runner.os }}-${{ matrix.runtime }}
           path: |
-            ${{ env.OPENCLAW_VITEST_REPORT_DIR }}
+            ${{ env.FLOWHELM_VITEST_REPORT_DIR }}
             ${{ runner.temp }}/vitest-slowest.md
-

@@ -1,0 +1,16 @@
+{
+  "name": "flowhelm_bot",
+  "version": "2026.2.12",
+  "description": "Compatibility shim that forwards to flowhelm",
+  "bin": {
+    "flowhelm_bot": "./bin/flowhelm_bot.js"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./cli-entry": "./bin/flowhelm_bot.js"
+  },
+  "dependencies": {
+    "flowhelm": "workspace:*"
+  }
+}

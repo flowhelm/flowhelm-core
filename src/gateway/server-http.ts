@@ -18,7 +18,6 @@ import type { CanvasHostHandler } from "../canvas-host/server.js";
 import { loadConfig } from "../config/config.js";
 import type { createSubsystemLogger } from "../logging/subsystem.js";
 import { safeEqualSecret } from "../security/secret-equal.js";
-import { handleSlackHttpRequest } from "../slack/http/index.js";
 import {
   AUTH_RATE_LIMIT_SCOPE_HOOK_AUTH,
   createAuthRateLimiter,
@@ -237,7 +236,7 @@ export function createHooksRequestHandler(
       res.statusCode = 400;
       res.setHeader("Content-Type", "text/plain; charset=utf-8");
       res.end(
-        "Hook token must be provided via Authorization: Bearer <token> or X-OpenClaw-Token header (query parameters are not allowed).",
+        "Hook token must be provided via Authorization: Bearer <token> or X-FlowHelm-Token header (query parameters are not allowed).",
       );
       return true;
     }
@@ -482,9 +481,6 @@ export function createGatewayHttpServer(opts: {
           rateLimiter,
         })
       ) {
-        return;
-      }
-      if (await handleSlackHttpRequest(req, res)) {
         return;
       }
       if (handlePluginRequest) {
