@@ -3,7 +3,7 @@ name: Pipeline (CI + Dev Deploy)
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 concurrency:
@@ -19,28 +19,18 @@ jobs:
         with:
           submodules: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
         with:
-          node-version: 22.x
-          check-latest: true
-
-      - name: Setup pnpm + cache store
-        uses: ./.github/actions/setup-pnpm-store-cache
-        with:
-          pnpm-version: "10.23.0"
-          cache-key-suffix: "node22"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts=false --config.engine-strict=false --config.enable-pre-post-scripts=true
+          install-bun: "false"
 
       - name: Lint + types + format
         run: pnpm check
 
       - name: Unit/integration tests
         env:
-          OPENCLAW_TEST_WORKERS: 2
-          OPENCLAW_TEST_MAX_OLD_SPACE_SIZE_MB: 6144
+          FLOWHELM_TEST_WORKERS: 2
+          FLOWHELM_TEST_MAX_OLD_SPACE_SIZE_MB: 6144
         run: pnpm canvas:a2ui:bundle && pnpm test
 
       - name: Secrets baseline check
@@ -51,62 +41,52 @@ jobs:
 
   deploy-dev:
     needs: [validate]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Deploy on push to main or dev branch
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     runs-on: [self-hosted, linux, x64, flowhelm-core]
-    concurrency:
-      group: deploy-dev-flowhelm-core
-      cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ensure app directory
-        env:
-          APP_DIR: ${{ vars.APP_DIR }}
+      - name: Build Docker Image
         run: |
-          set -euo pipefail
-          APP_DIR="${APP_DIR:-/home/flowhelm-core}"
-          mkdir -p "$APP_DIR"
+          docker build -t flowhelm:dev .
 
-      - name: Sync checkout to app directory
+      - name: Deploy Container
         env:
-          APP_DIR: ${{ vars.APP_DIR }}
+          FLOWHELM_GATEWAY_TOKEN: ${{ secrets.FLOWHELM_GATEWAY_TOKEN }}
+          CLAUDE_AI_SESSION_KEY: ${{ secrets.CLAUDE_AI_SESSION_KEY }}
+          CLAUDE_WEB_SESSION_KEY: ${{ secrets.CLAUDE_WEB_SESSION_KEY }}
+          CLAUDE_WEB_COOKIE: ${{ secrets.CLAUDE_WEB_COOKIE }}
+          # Use local directories on the self-hosted runner for persistence
+          FLOWHELM_CONFIG_DIR: ${{ vars.DEV_CONFIG_DIR || '/home/flowhelm-core/.flowhelm' }}
+          FLOWHELM_WORKSPACE_DIR: ${{ vars.DEV_WORKSPACE_DIR || '/home/flowhelm-core/workspace' }}
         run: |
-          set -euo pipefail
-          APP_DIR="${APP_DIR:-/home/flowhelm-core}"
-          rsync -az --delete \
-            --exclude '.git' \
-            --exclude '.github' \
-            ./ "$APP_DIR/"
+          # Ensure directories exist
+          mkdir -p "$FLOWHELM_CONFIG_DIR"
+          mkdir -p "$FLOWHELM_WORKSPACE_DIR"
+          
+          # Stop and remove existing container if it exists
+          docker stop flowhelm-dev || true
+          docker rm flowhelm-dev || true
+          
+          # Start new container
+          docker run -d \
+            --name flowhelm-dev \
+            --restart unless-stopped \
+            -p 18789:18789 \
+            -p 18790:18790 \
+            -e FLOWHELM_GATEWAY_TOKEN="$FLOWHELM_GATEWAY_TOKEN" \
+            -e CLAUDE_AI_SESSION_KEY="$CLAUDE_AI_SESSION_KEY" \
+            -e CLAUDE_WEB_SESSION_KEY="$CLAUDE_WEB_SESSION_KEY" \
+            -e CLAUDE_WEB_COOKIE="$CLAUDE_WEB_COOKIE" \
+            -v "$FLOWHELM_CONFIG_DIR":/home/node/.flowhelm \
+            -v "$FLOWHELM_WORKSPACE_DIR":/home/node/.flowhelm/workspace \
+            flowhelm:dev
 
-      - name: Optional service restart
-        env:
-          APP_DIR: ${{ vars.APP_DIR }}
-          SERVICE_RESTART_CMD: ${{ vars.SERVICE_RESTART_CMD }}
+      - name: Post-deploy health check
         run: |
-          set -euo pipefail
-          APP_DIR="${APP_DIR:-/home/flowhelm-core}"
-          cd "$APP_DIR"
-          if [ -n "${SERVICE_RESTART_CMD:-}" ]; then
-            echo "Running SERVICE_RESTART_CMD"
-            bash -lc "$SERVICE_RESTART_CMD"
-          else
-            echo "No SERVICE_RESTART_CMD configured; skipping restart"
-          fi
-
-      - name: Post-deploy sanity + optional health check
-        env:
-          APP_DIR: ${{ vars.APP_DIR }}
-          HEALTHCHECK_CMD: ${{ vars.HEALTHCHECK_CMD }}
-        run: |
-          set -euo pipefail
-          APP_DIR="${APP_DIR:-/home/flowhelm-core}"
-          cd "$APP_DIR"
+          echo "Waiting for gateway to start..."
+          sleep 5
+          docker exec flowhelm-dev flowhelm --help
           echo "Deployed commit: $GITHUB_SHA"
-          ls -la | head -n 20
-          if [ -n "${HEALTHCHECK_CMD:-}" ]; then
-            echo "Running HEALTHCHECK_CMD"
-            bash -lc "$HEALTHCHECK_CMD"
-          else
-            echo "No HEALTHCHECK_CMD configured; skipping health check"
-          fi
