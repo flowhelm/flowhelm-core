@@ -22,20 +22,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Checkout submodules (retry)
-      shell: bash
-      run: |
-        set -euo pipefail
-        git submodule sync --recursive
-        for attempt in 1 2 3 4 5; do
-          if git -c protocol.version=2 submodule update --init --force --depth=1 --recursive; then
-            exit 0
-          fi
-          echo "Submodule update failed (attempt $attempt/5). Retrying…"
-          sleep $((attempt * 10))
-        done
-        exit 1
-
     - name: Setup Node.js
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
