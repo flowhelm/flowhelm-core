@@ -56,15 +56,36 @@ export function isMemoryPath(relPath: string): boolean {
   return normalized.startsWith("memory/");
 }
 
-async function walkDir(dir: string, files: string[]) {
+async function walkDir(dir: string, files: string[], seen: Set<string> = new Set()) {
+  let realDir: string;
+  try {
+    realDir = await fs.realpath(dir);
+  } catch {
+    return;
+  }
+  if (seen.has(realDir)) {
+    return;
+  }
+  seen.add(realDir);
+
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
-    if (entry.isSymbolicLink()) {
+    if (entry.isDirectory()) {
+      await walkDir(full, files, seen);
       continue;
     }
-    if (entry.isDirectory()) {
-      await walkDir(full, files);
+    if (entry.isSymbolicLink()) {
+      try {
+        const stat = await fs.stat(full);
+        if (stat.isDirectory()) {
+          await walkDir(full, files, seen);
+        } else if (stat.isFile() && entry.name.endsWith(".md")) {
+          files.push(full);
+        }
+      } catch {
+        // ignore broken symlinks
+      }
       continue;
     }
     if (!entry.isFile()) {
@@ -82,67 +103,66 @@ export async function listMemoryFiles(
   extraPaths?: string[],
 ): Promise<string[]> {
   const result: string[] = [];
-  const memoryFile = path.join(workspaceDir, "MEMORY.md");
-  const altMemoryFile = path.join(workspaceDir, "memory.md");
-  const memoryDir = path.join(workspaceDir, "memory");
+  const seen = new Set<string>();
 
   const addMarkdownFile = async (absPath: string) => {
     try {
-      const stat = await fs.lstat(absPath);
-      if (stat.isSymbolicLink() || !stat.isFile()) {
+      const stat = await fs.stat(absPath);
+      if (!stat.isFile() || !absPath.toLowerCase().endsWith(".md")) {
         return;
       }
-      if (!absPath.endsWith(".md")) {
+      const real = await fs.realpath(absPath);
+      if (seen.has(real)) {
         return;
       }
+      seen.add(real);
       result.push(absPath);
-    } catch {}
+    } catch {
+      // ignore missing
+    }
   };
 
-  await addMarkdownFile(memoryFile);
-  await addMarkdownFile(altMemoryFile);
+  // 1. Broad scan of the workspace for any directory or file starting with "memory" (case-insensitive)
   try {
-    const dirStat = await fs.lstat(memoryDir);
-    if (!dirStat.isSymbolicLink() && dirStat.isDirectory()) {
-      await walkDir(memoryDir, result);
+    const entries = await fs.readdir(workspaceDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const lowerName = entry.name.toLowerCase();
+      const fullPath = path.join(workspaceDir, entry.name);
+      
+      if (lowerName.startsWith("memory")) {
+        const stat = await fs.stat(fullPath);
+        if (stat.isDirectory()) {
+          await walkDir(fullPath, result, seen);
+        } else if (lowerName.endsWith(".md")) {
+          await addMarkdownFile(fullPath);
+        }
+      }
     }
-  } catch {}
+  } catch {
+    // ignore readdir errors
+  }
 
+  // 2. Explicitly check for standard "MEMORY.md" (if not already picked up by broad scan)
+  await addMarkdownFile(path.join(workspaceDir, "MEMORY.md"));
+
+  // 3. Extra paths provided by configuration
   const normalizedExtraPaths = normalizeExtraMemoryPaths(workspaceDir, extraPaths);
   if (normalizedExtraPaths.length > 0) {
     for (const inputPath of normalizedExtraPaths) {
       try {
-        const stat = await fs.lstat(inputPath);
-        if (stat.isSymbolicLink()) {
-          continue;
-        }
+        const stat = await fs.stat(inputPath);
         if (stat.isDirectory()) {
-          await walkDir(inputPath, result);
-          continue;
+          await walkDir(inputPath, result, seen);
+        } else if (stat.isFile() && inputPath.toLowerCase().endsWith(".md")) {
+          await addMarkdownFile(inputPath);
         }
-        if (stat.isFile() && inputPath.endsWith(".md")) {
-          result.push(inputPath);
-        }
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
   }
-  if (result.length <= 1) {
-    return result;
-  }
-  const seen = new Set<string>();
-  const deduped: string[] = [];
-  for (const entry of result) {
-    let key = entry;
-    try {
-      key = await fs.realpath(entry);
-    } catch {}
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
-    deduped.push(entry);
-  }
-  return deduped;
+
+  return result;
 }
 
 export function hashText(value: string): string {
